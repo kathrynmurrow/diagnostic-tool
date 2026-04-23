@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enablement Diagnostic MVP Implementation Spec</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#12243a;
+      --ink-2:#1c3552;
+      --cream:#f7f3eb;
+      --paper:#fffdf9;
+      --line:#e7ddd0;
+      --gold:#b98b38;
+      --gold-soft:#ecd8af;
+      --muted:#627387;
+      --blue:#4d73a6;
+      --teal:#2f7d67;
+      --olive:#6f7c3f;
+      --shadow:0 16px 40px rgba(18,36,58,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--cream);
+      color:var(--ink);
+      font-family:'DM Sans',sans-serif;
+      line-height:1.55;
+    }
+    .wrap{max-width:1280px;margin:0 auto;padding:32px 24px 56px}
+    .hero{
+      background:linear-gradient(135deg,var(--ink) 0%, var(--ink-2) 100%);
+      color:#fff;border-radius:28px;padding:34px 32px;box-shadow:var(--shadow);
+    }
+    .eyebrow{font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:10px}
+    h1{
+      margin:0 0 12px;
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(2.7rem, 4.5vw, 4.4rem);
+      line-height:1.08;
+      font-weight:600;
+      letter-spacing:-.02em;
+      max-width:18ch;
+    }
+    .hero p{max-width:78ch;color:rgba(255,255,255,.86);margin:0;line-height:1.8}
+    .summary{margin-top:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .summary-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px}
+    .summary-card small{display:block;font-size:.64rem;text-transform:uppercase;letter-spacing:.16em;color:var(--gold-soft);margin-bottom:6px}
+    .summary-card span{display:block;font-size:.9rem;line-height:1.45;color:rgba(255,255,255,.86)}
+    .section{
+      margin-top:22px;background:var(--paper);border:1px solid var(--line);
+      border-top:4px solid var(--section-accent, var(--gold));border-radius:24px;
+      box-shadow:var(--shadow);padding:24px;
+    }
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:14px}
+    .section-head-text{flex:1}
+    .section-kicker{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--section-accent, var(--gold));margin-bottom:8px}
+    .section-head h2{margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3vw,3rem);line-height:1.04;font-weight:600}
+    .section-copy{margin-top:8px;color:var(--muted);line-height:1.8;max-width:88ch}
+    .section-badge{width:54px;height:54px;display:flex;align-items:center;justify-content:center;border-radius:18px;background:linear-gradient(180deg,#fff,var(--section-soft,#f8f4ea));border:1px solid var(--section-border,#eadab6);color:var(--section-accent,var(--gold));font-size:1.35rem;flex-shrink:0}
+    #scope{--section-accent:var(--gold);--section-soft:#fbf6ea;--section-border:#eadab6}
+    #fields{--section-accent:var(--blue);--section-soft:#eef3fb;--section-border:#d2deef}
+    #payload{--section-accent:var(--teal);--section-soft:#edf7f4;--section-border:#cfe3dc}
+    #pdf{--section-accent:var(--olive);--section-soft:#f3f7ea;--section-border:#d9e5c4}
+    #email{--section-accent:#8b5f46;--section-soft:#f8f1ed;--section-border:#e5d4ca}
+    #feedback{--section-accent:#a15d7b;--section-soft:#faf0f5;--section-border:#ebcede}
+    #analytics{--section-accent:#68788f;--section-soft:#f2f4f8;--section-border:#d8dfe8}
+    .grid-2,.grid-3{display:grid;gap:16px}
+    .grid-2{grid-template-columns:1fr 1fr}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .card{
+      border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#fff,var(--section-soft,#fbf8f2));padding:18px;
+    }
+    .card h3{margin:0 0 10px;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;color:var(--section-accent,var(--gold))}
+    .card p,.card li{color:var(--muted);line-height:1.65;font-size:.92rem}
+    .card ul{margin:0;padding-left:18px}
+    .table-wrap{overflow:auto;margin-top:16px}
+    table{width:100%;min-width:900px;border-collapse:collapse;font-size:.9rem;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+    th,td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{background:#fbf8f2;font-size:.7rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+    code, pre{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    pre{
+      background:#0f1f33;color:#eef4ff;border-radius:18px;padding:18px;overflow:auto;
+      border:1px solid rgba(255,255,255,.08);font-size:.86rem;line-height:1.55;
+    }
+    .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .tag{display:inline-flex;align-items:center;padding:.34rem .64rem;border-radius:999px;border:1px solid var(--section-border,#eadab6);background:var(--section-soft,#fbf6ea);color:var(--section-accent,var(--gold));font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+    footer{text-align:center;color:var(--muted);font-size:.86rem;padding:26px 0 10px}
+    @media (max-width: 960px){
+      .summary,.grid-2,.grid-3{grid-template-columns:1fr}
+      .wrap{padding:20px 16px 40px}
+      .hero{padding:26px 20px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Public launch first • Exact implementation spec • MVP build</div>
+      <h1>Enablement Diagnostic MVP Implementation Spec</h1>
+      <p>
+        This spec translates the public launch workflow into concrete build requirements. It defines the MVP scope, frontend fields, payload structure, roadmap-generation outputs, email flow, feedback loop, and analytics requirements so the product can move from concept to build without ambiguity.
+      </p>
+      <div class="summary">
+        <div class="summary-card"><small>MVP goal</small><span>Public diagnostic that generates a tailored 30-60-90 PDF roadmap and emails it to the recipient.</span></div>
+        <div class="summary-card"><small>Primary promise</small><span>Immediate on-screen diagnosis + delivered PDF roadmap.</span></div>
+        <div class="summary-card"><small>Support loop</small><span>Built-in feedback and use-case submission path.</span></div>
+        <div class="summary-card"><small>Later phase</small><span>Same engine reused inside Docebo after public version is stable.</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="scope">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 1</div>
+          <h2>MVP scope</h2>
+          <p class="section-copy">
+            The MVP is intentionally narrow: one public-facing diagnostic, one submission flow, one roadmap-generation flow, one email-delivery flow, and one feedback flow. Docebo is explicitly deferred.
+          </p>
+        </div>
+        <div class="section-badge">🎯</div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>In scope for MVP</h3>
+          <ul>
+            <li>Public HTML diagnostic page</li>
+            <li>Recipient email field</li>
+            <li>On-screen diagnosis output</li>
+            <li>Webhook or backend submission endpoint</li>
+            <li>Tailored 30-60-90 roadmap generation</li>
+            <li>PDF creation</li>
+            <li>Email delivery</li>
+            <li>Feedback / use-case submission button</li>
+            <li>Submission logging for analytics</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Out of scope for MVP</h3>
+          <ul>
+            <li>Docebo embedding / widget implementation</li>
+            <li>Authentication / login gating</li>
+            <li>Advanced admin dashboard UI</li>
+            <li>Multi-language localization</li>
+            <li>Enterprise CRM or ticketing integration</li>
+            <li>Complex user accounts or saved histories</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="fields">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 2</div>
+          <h2>Frontend form fields</h2>
+          <p class="section-copy">
+            These are the required data points for the MVP. They support the diagnostic logic, the roadmap generation, and the email-delivery promise.
+          </p>
+        </div>
+        <div class="section-badge">📝</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>challenge</strong></td><td>Textarea</td><td>Yes</td><td>Describes the core problem in plain language.</td></tr>
+            <tr><td><strong>context</strong></td><td>Select</td><td>Yes</td><td>Frames the issue domain: onboarding, adoption, workflow, governance, visibility.</td></tr>
+            <tr><td><strong>audience</strong></td><td>Select</td><td>Yes</td><td>Defines who is most affected.</td></tr>
+            <tr><td><strong>journeyStage</strong></td><td>Select</td><td>Yes</td><td>Shows where in the journey the issue appears.</td></tr>
+            <tr><td><strong>recurrence</strong></td><td>Select</td><td>Yes</td><td>Distinguishes new vs recurring problems.</td></tr>
+            <tr><td><strong>severity</strong></td><td>Select</td><td>Yes</td><td>Indicates urgency / risk level.</td></tr>
+            <tr><td><strong>resourceState</strong></td><td>Select</td><td>Yes</td><td>Shows whether supports already exist.</td></tr>
+            <tr><td><strong>dataView</strong></td><td>Select</td><td>Yes</td><td>Shows whether leaders can already see the problem in data.</td></tr>
+            <tr><td><strong>clarity</strong></td><td>Range 1–5</td><td>Yes</td><td>Measures expectation / role clarity.</td></tr>
+            <tr><td><strong>support</strong></td><td>Range 1–5</td><td>Yes</td><td>Measures reinforcement / support structure.</td></tr>
+            <tr><td><strong>visibility</strong></td><td>Range 1–5</td><td>Yes</td><td>Measures how visible the issue is to leaders.</td></tr>
+            <tr><td><strong>workflowClarity</strong></td><td>Range 1–5</td><td>Yes</td><td>Measures sequence / handoff clarity.</td></tr>
+            <tr><td><strong>tools</strong></td><td>Range 1–5</td><td>Yes</td><td>Measures access / systems / tool readiness.</td></tr>
+            <tr><td><strong>governanceScore</strong></td><td>Range 1–5</td><td>Yes</td><td>Measures ownership and decision clarity.</td></tr>
+            <tr><td><strong>frictions</strong></td><td>Multi-select</td><td>Yes</td><td>Identifies where friction shows up most.</td></tr>
+            <tr><td><strong>symptoms</strong></td><td>Textarea</td><td>No</td><td>Captures observed symptoms and examples.</td></tr>
+            <tr><td><strong>recipientEmail</strong></td><td>Email</td><td>Yes</td><td>Required to send the roadmap PDF.</td></tr>
+            <tr><td><strong>recipientName</strong></td><td>Text</td><td>No</td><td>Optional personalization for email and PDF.</td></tr>
+            <tr><td><strong>organization</strong></td><td>Text</td><td>No</td><td>Optional for segmentation and use-case reporting.</td></tr>
+            <tr><td><strong>consent</strong></td><td>Checkbox</td><td>Recommended</td><td>Confirms email delivery / contact consent if needed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="payload">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 3</div>
+          <h2>Submission payload and system handoff</h2>
+          <p class="section-copy">
+            After the user clicks the roadmap CTA, the frontend should send one normalized payload to the webhook or backend. That payload should include both the raw inputs and the computed diagnostic output.
+          </p>
+        </div>
+        <div class="section-badge">📦</div>
+      </div>
+
+<pre>{
+  "submissionId": "uuid-generated-client-or-server-side",
+  "submittedAt": "ISO_TIMESTAMP",
+  "source": "public_enablement_diagnostic",
+  "recipient": {
+    "email": "user@example.com",
+    "name": "Optional Name",
+    "organization": "Optional Organization"
+  },
+  "inputs": {
+    "challenge": "...",
+    "context": "onboarding|adoption|workflow|governance|visibility",
+    "audience": "frontline|managers|multiunit|admins|mixed",
+    "journeyStage": "early|transition|daily|leader|reporting",
+    "recurrence": "new|intermittent|recurring",
+    "severity": "low|medium|high",
+    "resourceState": "yes-good|yes-buried|partial|none",
+    "dataView": "clear|somewhat|no",
+    "clarity": 1,
+    "support": 1,
+    "visibility": 1,
+    "workflowClarity": 1,
+    "tools": 1,
+    "governanceScore": 1,
+    "frictions": ["users", "workflow"],
+    "symptoms": "..."
+  },
+  "diagnosticOutput": {
+    "primaryDiagnosis": "...",
+    "secondaryDiagnosis": "...",
+    "riskLevel": "low|medium|high",
+    "fixFirst": "...",
+    "ownerPrimary": "...",
+    "trainingAnswer": "...",
+    "interventionType": "...",
+    "rootCauses": ["...", "..."],
+    "readinessGaps": ["...", "..."],
+    "ownershipQuestions": ["...", "..."],
+    "nextActions": ["...", "..."],
+    "notYet": "...",
+    "evidenceNarrative": "...",
+    "tags": ["...", "..."]
+  }
+}</pre>
+    </section>
+
+    <section class="section" id="pdf">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 4</div>
+          <h2>30-60-90 roadmap PDF spec</h2>
+          <p class="section-copy">
+            The roadmap should not just restate the diagnosis. It should translate the diagnosis into sequenced action over 30, 60, and 90 days.
+          </p>
+        </div>
+        <div class="section-badge">🗂️</div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Required PDF sections</h3>
+          <ul>
+            <li>Title page / brand header</li>
+            <li>Diagnostic summary</li>
+            <li>Primary issue and risk level</li>
+            <li>Why this is / is not primarily a training issue</li>
+            <li>30-day priorities</li>
+            <li>60-day priorities</li>
+            <li>90-day priorities</li>
+            <li>Owner guidance</li>
+            <li>Evidence to watch</li>
+            <li>Recommended next actions</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Roadmap generation rules</h3>
+          <ul>
+            <li>30-day section = diagnosis validation + immediate structural fixes</li>
+            <li>60-day section = system changes, support structures, and workflow refinements</li>
+            <li>90-day section = reinforcement, measurement, governance, and optimization</li>
+            <li>Roadmap content should vary based on primary diagnosis type</li>
+            <li>Each stage should be concise, action-oriented, and non-generic</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <h3>Example 30-60-90 logic by diagnosis</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Primary diagnosis</th>
+                <th>30 days</th>
+                <th>60 days</th>
+                <th>90 days</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Workflow design</strong></td>
+                <td>Map current state, identify friction points, validate breakpoints</td>
+                <td>Redesign sequence, simplify handoffs, update support tools</td>
+                <td>Reinforce new workflow and measure execution consistency</td>
+              </tr>
+              <tr>
+                <td><strong>Governance</strong></td>
+                <td>Clarify owners, approvals, and escalation paths</td>
+                <td>Document and publish governance standards</td>
+                <td>Review governance adherence and reduce exceptions</td>
+              </tr>
+              <tr>
+                <td><strong>Support structure</strong></td>
+                <td>Define missing support points and manager roles</td>
+                <td>Launch reinforcement tools and manager-facing supports</td>
+                <td>Measure support usage and improve weak areas</td>
+              </tr>
+              <tr>
+                <td><strong>Visibility</strong></td>
+                <td>Identify blind spots and reporting gaps</td>
+                <td>Create or refine dashboard and signal views</td>
+                <td>Use signals to drive earlier intervention and better decisions</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="email">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 5</div>
+          <h2>Email-delivery spec</h2>
+          <p class="section-copy">
+            The email flow is part of the product promise. It should be clear, branded, and reliable.
+          </p>
+        </div>
+        <div class="section-badge">✉️</div>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Trigger</h3>
+          <p>User clicks the CTA to receive the roadmap after completing the diagnostic and providing a valid email address.</p>
+        </div>
+        <div class="card">
+          <h3>Email contents</h3>
+          <p>Short branded message, attached PDF roadmap, optional link back to the diagnostic, and optional feedback link.</p>
+        </div>
+        <div class="card">
+          <h3>Delivery status</h3>
+          <p>System should store whether email send succeeded, failed, or needs retry.</p>
+        </div>
+      </div>
+      <pre>{
+  "emailTemplate": {
+    "subject": "Your Enablement Diagnostic 30-60-90 Roadmap",
+    "bodySections": [
+      "thank_you",
+      "short_summary",
+      "pdf_attached",
+      "feedback_link"
+    ]
+  },
+  "deliveryLog": {
+    "submissionId": "uuid",
+    "emailSent": true,
+    "emailProviderMessageId": "provider-message-id",
+    "pdfGenerated": true,
+    "sentAt": "ISO_TIMESTAMP"
+  }
+}</pre>
+    </section>
+
+    <section class="section" id="feedback">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 6</div>
+          <h2>Feedback and use-case submission spec</h2>
+          <p class="section-copy">
+            The feedback button should be treated as part of the product loop, not an afterthought. It is how the tool becomes better and how public interest can be surfaced into future opportunities.
+          </p>
+        </div>
+        <div class="section-badge">💬</div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Feedback button behavior</h3>
+          <ul>
+            <li>Visible on the results screen</li>
+            <li>Visible in the follow-up email</li>
+            <li>Opens feedback form or modal</li>
+            <li>Can optionally prefill user email</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Feedback fields</h3>
+          <ul>
+            <li>Email</li>
+            <li>Role / organization</li>
+            <li>How they used the tool</li>
+            <li>What was most helpful</li>
+            <li>What was unclear</li>
+            <li>Improvement suggestions</li>
+            <li>Whether they want follow-up</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="analytics">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 7</div>
+          <h2>Analytics and logging requirements</h2>
+          <p class="section-copy">
+            The MVP should capture enough signal to evaluate tool usage, delivery success, and the most common diagnostic themes without building a full analytics product on day one.
+          </p>
+        </div>
+        <div class="section-badge">📊</div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Minimum event logging</h3>
+          <ul>
+            <li>Diagnostic page opened</li>
+            <li>Diagnostic started</li>
+            <li>Diagnostic completed</li>
+            <li>Email submitted</li>
+            <li>Roadmap generation attempted</li>
+            <li>PDF generation succeeded / failed</li>
+            <li>Email send succeeded / failed</li>
+            <li>Feedback form opened</li>
+            <li>Feedback form submitted</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Minimum reporting dimensions</h3>
+          <ul>
+            <li>Submission timestamp</li>
+            <li>Primary diagnosis type</li>
+            <li>Severity</li>
+            <li>Audience</li>
+            <li>Context</li>
+            <li>Risk level</li>
+            <li>Roadmap sent or not</li>
+            <li>Feedback submitted or not</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">Usage</span>
+        <span class="tag">Completion</span>
+        <span class="tag">Email Success</span>
+        <span class="tag">Feedback Volume</span>
+        <span class="tag">Top Diagnosis Types</span>
+      </div>
+    </section>
+
+    <footer>
+      Built as the exact MVP implementation spec for the public-facing launch of the Enablement Diagnostic, with the LMS integration intentionally deferred until the public flow is stable.
+    </footer>
+  </div>
+</body>
+</html>

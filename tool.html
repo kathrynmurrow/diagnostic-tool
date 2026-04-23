@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enablement Diagnostic Studio | Public MVP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#13263d; --ink-2:#1a3554; --gold:#b98b38; --gold-soft:#ead2a4;
+      --cream:#f7f3eb; --paper:#fffdf9; --line:#e6ddd0; --muted:#637489;
+      --success:#2d6a4f; --warn:#9c6b00; --risk:#8c2f39; --teal:#2f7d67; --blue:#4a70a8;
+      --shadow:0 16px 42px rgba(19,38,61,.08); --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);line-height:1.55}
+    .wrap{max-width:1180px;margin:0 auto;padding:24px 18px 40px}
+    .hero{
+      background:linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
+      border-radius:26px;padding:28px 24px;color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden
+    }
+    .hero:after{content:"";position:absolute;inset:auto -28px -36px auto;width:180px;height:180px;background:radial-gradient(circle, rgba(234,210,164,.18) 0%, transparent 70%)}
+    .eyebrow{font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:10px}
+    h1{margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-size:clamp(2.3rem,4vw,3.7rem);line-height:1.04;font-weight:600;letter-spacing:-.02em;max-width:16ch}
+    .hero p{max-width:76ch;color:rgba(255,255,255,.84);line-height:1.75;margin:0}
+    .summary-strip{margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .summary-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px}
+    .summary-card small{display:block;text-transform:uppercase;letter-spacing:.16em;color:var(--gold-soft);font-size:.64rem;margin-bottom:5px}
+    .summary-card span{display:block;color:rgba(255,255,255,.86);font-size:.9rem;line-height:1.45}
+    .layout{display:grid;grid-template-columns:minmax(0,1.02fr) 380px;gap:20px;margin-top:20px;align-items:start}
+    .card{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+    .card.pad{padding:22px}
+    .section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+    .section-head h2{margin:0;font-family:'Cormorant Garamond',serif;font-size:2rem;line-height:1.05;font-weight:600}
+    .section-head p{margin:8px 0 0;color:var(--muted);line-height:1.7}
+    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:46px;border-radius:16px;background:#f8f3e8;border:1px solid #ead7b4;color:var(--gold);font-size:1.25rem;flex-shrink:0}
+    .progress{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+    .step-pill{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fbf8f2}
+    .step-pill.active{border-color:#d8c39a;background:#fff8ea}
+    .step-pill.done{border-color:#cfe3dc;background:#eef7f4}
+    .step-pill small{display:block;text-transform:uppercase;letter-spacing:.15em;font-size:.63rem;color:var(--gold);margin-bottom:5px}
+    .step-pill strong{display:block;font-size:.92rem}
+    .form-step{display:none}.form-step.active{display:block}
+    .field{margin-bottom:16px}
+    label.top{display:block;font-weight:700;margin-bottom:8px;font-size:.96rem}
+    .help{color:var(--muted);font-size:.84rem;line-height:1.55;margin-top:4px}
+    textarea,select,input[type="text"],input[type="email"]{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 13px;font:inherit;background:#fff;color:var(--ink)}
+    textarea{min-height:108px;resize:vertical}
+    .grid-2,.grid-3{display:grid;gap:14px}.grid-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr 1fr}
+    .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .check-item{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fbf8f2;cursor:pointer}
+    .check-item input{margin-top:3px}.check-item .small{display:block;color:var(--muted);font-size:.82rem;line-height:1.45;margin-top:2px}
+    .range-card{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbf8f2}
+    .range-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+    .range-top strong{font-size:.92rem}
+    .score-chip{min-width:36px;text-align:center;padding:6px 8px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:700;color:var(--ink);font-size:.85rem}
+    input[type="range"]{width:100%}
+    .scale-legend{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;color:var(--muted);margin-top:8px}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .btn{appearance:none;border:none;border-radius:12px;min-height:44px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer;letter-spacing:.03em}
+    .btn-primary{background:var(--ink);color:#fff}
+    .btn-secondary{background:#f2ece1;color:var(--ink);border:1px solid var(--line)}
+    .btn-teal{background:var(--teal);color:#fff}
+    .btn-blue{background:var(--blue);color:#fff}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .results-panel{display:none;margin-top:18px}.results-panel.active{display:block}
+    .headline{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}
+    .headline-card{padding:18px;border-radius:18px;border:1px solid var(--line);background:#fff}
+    .headline-card h3{margin:0 0 8px;font-family:'Cormorant Garamond',serif;font-size:1.8rem;line-height:1.05}
+    .headline-card p{margin:0;color:var(--muted);line-height:1.7}
+    .signal-box{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .signal{padding:12px;border-radius:14px;border:1px solid var(--line);background:#fbf8f2}
+    .signal small{display:block;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+    .signal strong{display:block;font-family:'Cormorant Garamond',serif;font-size:1.5rem;line-height:1;margin-bottom:4px}
+    .signal span{display:block;color:var(--muted);font-size:.82rem;line-height:1.45}
+    .risk-badge{display:inline-flex;align-items:center;padding:8px 11px;border-radius:999px;font-size:.76rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+    .risk-low{background:rgba(45,106,79,.12);color:var(--success)} .risk-medium{background:rgba(156,107,0,.12);color:var(--warn)} .risk-high{background:rgba(140,47,57,.12);color:var(--risk)}
+    .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .result-block{padding:18px;border-radius:18px;background:#fff;border:1px solid var(--line);min-height:100%}
+    .result-block h4{margin:0 0 8px;font-size:1rem;letter-spacing:.03em}
+    .result-block ul{margin:0;padding-left:18px}
+    .result-block li{margin:.4rem 0;color:var(--muted);line-height:1.6}
+    .priority-box,.email-panel,.payload-panel{margin-top:14px;padding:18px;border-radius:18px;border:1px solid #ead7b4;background:#fff8ea}
+    .email-panel{border-color:#cde3dc;background:#eff7f4}
+    .payload-panel{border-color:#d2deef;background:#eef3fb}
+    .priority-box h4,.email-panel h4,.payload-panel h4{margin:0 0 8px;font-size:1rem}
+    .priority-box p,.email-panel p,.payload-panel p{margin:0;color:var(--ink);line-height:1.65}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .tag{padding:7px 10px;border-radius:999px;background:var(--cream);border:1px solid var(--line);font-size:.75rem;color:var(--ink)}
+    .side-stack{display:grid;gap:16px}
+    .side-block{padding:20px;border-radius:20px;border:1px solid var(--line);background:#fff}
+    .side-block h3{margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-size:1.6rem;line-height:1.05}
+    .side-block p,.side-block li{color:var(--muted);line-height:1.65;font-size:.92rem}
+    .side-block ul{margin:0;padding-left:18px}
+    .arch-grid{display:grid;gap:10px;margin-top:10px}
+    .arch-item{border:1px solid var(--line);border-radius:14px;background:#fbf8f2;padding:12px}
+    .arch-item small{display:block;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);font-size:.64rem;margin-bottom:4px}
+    .arch-item strong{display:block;font-size:.92rem;margin-bottom:4px}
+    .arch-item span{color:var(--muted);font-size:.84rem;line-height:1.45;display:block}
+    .status{margin-top:10px;font-size:.88rem;color:var(--muted)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem}
+    pre{white-space:pre-wrap;word-break:break-word;background:#0f1f33;color:#eef4ff;border-radius:16px;padding:14px;border:1px solid rgba(255,255,255,.08);font-size:.8rem;line-height:1.5;max-height:320px;overflow:auto}
+    dialog{border:none;border-radius:20px;padding:0;max-width:760px;width:calc(100% - 24px);box-shadow:0 24px 60px rgba(19,38,61,.22)}
+    dialog::backdrop{background:rgba(18,36,58,.45)}
+    .modal{padding:22px;background:var(--paper)}
+    .modal-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px}
+    .modal-head h3{margin:0;font-family:'Cormorant Garamond',serif;font-size:2rem;line-height:1.04}
+    .close{background:#f2ece1;border:1px solid var(--line);border-radius:12px;min-width:42px;height:42px;font:inherit;font-weight:700;cursor:pointer}
+    @media (max-width:1020px){
+      .layout,.headline,.result-grid,.grid-2,.grid-3{grid-template-columns:1fr}
+      .summary-strip,.signal-box,.check-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:700px){
+      .summary-strip,.signal-box,.check-grid{grid-template-columns:1fr}
+      .wrap{padding:20px 16px 40px}.hero{padding:26px 20px}.card.pad{padding:18px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Readiness • Enablement • Governance • Public MVP</div>
+      <h1>Enablement Diagnostic Studio</h1>
+      <p>
+        A guided diagnostic designed to help identify whether a challenge is primarily a training issue, a readiness issue, a workflow issue, a visibility issue, a governance issue, or some combination of those. This public MVP also collects recipient email, prepares a webhook-ready roadmap payload, and includes a built-in feedback path.
+      </p>
+      <div class="summary-strip">
+        <div class="summary-card"><small>Step 1</small><span>Define the situation and who is affected.</span></div>
+        <div class="summary-card"><small>Step 2</small><span>Diagnose the system conditions around clarity, support, access, visibility, and governance.</span></div>
+        <div class="summary-card"><small>Step 3</small><span>Generate the output, send roadmap request, and capture feedback.</span></div>
+        <div class="summary-card"><small>Purpose</small><span>Challenge the reflex to default to “more training” before diagnosing the real problem.</span></div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="card pad">
+        <div class="section-head">
+          <div>
+            <h2>Run a guided diagnostic</h2>
+            <p>This tool is strongest when the user describes one real problem, rates the current conditions honestly, and uses the output to identify what should happen before more content is created.</p>
+          </div>
+          <div class="badge">🩺</div>
+        </div>
+
+        <div class="progress">
+          <div class="step-pill active" id="pill-1"><small>Step 1</small><strong>Define the situation</strong></div>
+          <div class="step-pill" id="pill-2"><small>Step 2</small><strong>Diagnose the conditions</strong></div>
+          <div class="step-pill" id="pill-3"><small>Step 3</small><strong>Generate the output</strong></div>
+        </div>
+
+        <form id="diagnosticForm">
+          <div class="form-step active" data-step="1">
+            <div class="field">
+              <label class="top" for="challenge">What problem are you trying to solve?</label>
+              <textarea id="challenge" placeholder="Example: New managers complete onboarding, but they still struggle to execute consistently in the first 60 days and administrators spend too much time clarifying process steps."></textarea>
+              <div class="help">Describe the real problem in plain language. Focus on the execution issue, not the presumed solution.</div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label class="top" for="context">Primary context</label>
+                <select id="context">
+                  <option value="onboarding">Onboarding / ramp-up</option>
+                  <option value="adoption">Adoption / behavior change</option>
+                  <option value="workflow">Workflow / process execution</option>
+                  <option value="governance">Governance / ownership clarity</option>
+                  <option value="visibility">Visibility / reporting / decision support</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="top" for="audience">Primary audience</label>
+                <select id="audience">
+                  <option value="frontline">Frontline / individual contributors</option>
+                  <option value="managers">Managers / people leaders</option>
+                  <option value="multiunit">Multi-site / cross-functional leaders</option>
+                  <option value="admins">Admins / enablement owners</option>
+                  <option value="mixed">Mixed internal + external audiences</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="field">
+                <label class="top" for="journeyStage">Where in the journey does it appear most?</label>
+                <select id="journeyStage">
+                  <option value="early">Early / first exposure</option>
+                  <option value="transition">Role transition or handoff point</option>
+                  <option value="daily">Daily execution / recurring work</option>
+                  <option value="leader">Leader follow-up / reinforcement</option>
+                  <option value="reporting">Reporting / visibility / escalation</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="top" for="recurrence">Is this issue new or recurring?</label>
+                <select id="recurrence">
+                  <option value="new">New / recent</option>
+                  <option value="intermittent">Intermittent</option>
+                  <option value="recurring">Recurring / persistent</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="top" for="severity">How severe is the issue?</label>
+                <select id="severity">
+                  <option value="low">Low impact / contained</option>
+                  <option value="medium">Moderate / affecting consistency</option>
+                  <option value="high">High / creating risk or significant rework</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label class="top" for="resourceState">Do supporting resources already exist?</label>
+                <select id="resourceState">
+                  <option value="yes-good">Yes, and they are reasonably visible</option>
+                  <option value="yes-buried">Yes, but they are buried or underused</option>
+                  <option value="partial">Partially / inconsistently</option>
+                  <option value="none">No, not really</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="top" for="dataView">Can leaders currently see the issue in data?</label>
+                <select id="dataView">
+                  <option value="clear">Yes, clearly</option>
+                  <option value="somewhat">Somewhat, but not enough</option>
+                  <option value="no">No, not really</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="toStep2">Continue to Step 2</button>
+              <button type="button" class="btn btn-secondary" id="resetBtnTop">Reset</button>
+            </div>
+          </div>
+
+          <div class="form-step" data-step="2">
+            <div class="grid-2">
+              <div class="range-card">
+                <div class="range-top"><strong>Role clarity</strong><span class="score-chip" id="clarityValue">3</span></div>
+                <input id="clarity" type="range" min="1" max="5" value="3">
+                <div class="scale-legend"><span>1 = expectations unclear</span><span>5 = expectations consistently clear</span></div>
+              </div>
+              <div class="range-card">
+                <div class="range-top"><strong>Support structure</strong><span class="score-chip" id="supportValue">3</span></div>
+                <input id="support" type="range" min="1" max="5" value="3">
+                <div class="scale-legend"><span>1 = little support in place</span><span>5 = support is strong and consistent</span></div>
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-top:14px;">
+              <div class="range-card">
+                <div class="range-top"><strong>Visibility</strong><span class="score-chip" id="visibilityValue">3</span></div>
+                <input id="visibility" type="range" min="1" max="5" value="3">
+                <div class="scale-legend"><span>1 = weak visibility</span><span>5 = leaders can clearly see what matters</span></div>
+              </div>
+              <div class="range-card">
+                <div class="range-top"><strong>Workflow clarity</strong><span class="score-chip" id="workflowValue">3</span></div>
+                <input id="workflowClarity" type="range" min="1" max="5" value="3">
+                <div class="scale-legend"><span>1 = process confusing</span><span>5 = sequence and handoffs are clear</span></div>
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-top:14px;">
+              <div class="range-card">
+                <div class="range-top"><strong>Access / tools</strong><span class="score-chip" id="toolsValue">3</span></div>
+                <input id="tools" type="range" min="1" max="5" value="3">
+                <div class="scale-legend"><span>1 = tools / access missing</span><span>5 = tools are available and easy to use</span></div>
+              </div>
+              <div class="range-card">
+                <div class="range-top"><strong>Governance / ownership</strong><span class="score-chip" id="governanceValue">3</span></div>
+                <input id="governanceScore" type="range" min="1" max="5" value="3">
+                <div class="scale-legend"><span>1 = ownership unclear</span><span>5 = ownership and decisions are clear</span></div>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:16px;">
+              <label class="top">Where is friction showing up most?</label>
+              <div class="check-grid">
+                <label class="check-item"><input type="checkbox" value="users"> <span><strong>User experience</strong><span class="small">Confusion, inconsistency, poor adoption, weak usability</span></span></label>
+                <label class="check-item"><input type="checkbox" value="admins"> <span><strong>Admin experience</strong><span class="small">Manual effort, duplicate work, weak ownership, process burden</span></span></label>
+                <label class="check-item"><input type="checkbox" value="workflow"> <span><strong>Workflow design</strong><span class="small">Broken handoffs, unclear sequence, too many steps</span></span></label>
+                <label class="check-item"><input type="checkbox" value="governance"> <span><strong>Governance</strong><span class="small">Decision rights, approval logic, accountability gaps</span></span></label>
+                <label class="check-item"><input type="checkbox" value="access"> <span><strong>Access / tools</strong><span class="small">Missing systems, hard-to-find resources, permissions issues</span></span></label>
+                <label class="check-item"><input type="checkbox" value="leaders"> <span><strong>Leader reinforcement</strong><span class="small">Weak coaching, inconsistent follow-up, low accountability</span></span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="top" for="symptoms">Observed symptoms</label>
+              <textarea id="symptoms" placeholder="Example: repetitive questions, inconsistent execution, extra admin rework, missed deadlines, unclear ownership, low adoption"></textarea>
+            </div>
+
+            <div class="btn-row">
+              <button type="button" class="btn btn-secondary" id="backTo1">Back</button>
+              <button type="button" class="btn btn-primary" id="toStep3">Continue to Step 3</button>
+            </div>
+          </div>
+
+          <div class="form-step" data-step="3">
+            <div class="grid-2">
+              <div class="field">
+                <label class="top" for="recipientEmail">Where should we send your 30-60-90 roadmap?</label>
+                <input id="recipientEmail" type="email" placeholder="name@example.com">
+                <div class="help">Required for roadmap delivery. You can still generate the on-screen diagnosis without sending it.</div>
+              </div>
+              <div class="field">
+                <label class="top" for="recipientName">Name (optional)</label>
+                <input id="recipientName" type="text" placeholder="Your name">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label class="top" for="organization">Organization (optional)</label>
+                <input id="organization" type="text" placeholder="Company or team">
+              </div>
+              <div class="field">
+                <label class="top" for="consent">
+                  <input id="consent" type="checkbox" style="width:auto;margin-right:8px;transform:translateY(1px);">
+                  I agree to receive the roadmap by email
+                </label>
+                <div class="help">Recommended for public launch if you want explicit email consent language in the experience.</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="top">Ready to generate the diagnostic?</label>
+              <div class="help">This final step translates the situation and condition ratings into a likely diagnosis, what to fix first, who should own the next step, whether training is actually the answer, and what evidence should confirm improvement.</div>
+            </div>
+            <div class="btn-row">
+              <button type="button" class="btn btn-secondary" id="backTo2">Back</button>
+              <button type="submit" class="btn btn-primary">Generate Diagnostic</button>
+              <button type="button" class="btn btn-secondary" id="resetBtnBottom">Reset</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="results-panel" id="resultsPanel">
+          <div class="headline">
+            <div class="headline-card">
+              <div class="risk-badge" id="riskBadge">Moderate risk</div>
+              <h3 id="primaryDiagnosis">Primary diagnosis</h3>
+              <p id="diagnosisNarrative"></p>
+
+              <div class="signal-box">
+                <div class="signal">
+                  <small>Fix first</small>
+                  <strong id="fixFirst">—</strong>
+                  <span id="fixFirstDetail"></span>
+                </div>
+                <div class="signal">
+                  <small>Owner</small>
+                  <strong id="ownerPrimary">—</strong>
+                  <span id="ownerDetail"></span>
+                </div>
+                <div class="signal">
+                  <small>Training answer?</small>
+                  <strong id="trainingAnswer">—</strong>
+                  <span id="trainingDetail"></span>
+                </div>
+              </div>
+
+              <div class="tags" id="diagnosticTags"></div>
+            </div>
+
+            <div class="headline-card">
+              <h3>Evidence to watch</h3>
+              <p id="evidenceNarrative"></p>
+              <div class="priority-box">
+                <h4>Recommended intervention type</h4>
+                <p id="interventionType"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-block">
+              <h4>Likely root causes</h4>
+              <ul id="rootCauses"></ul>
+            </div>
+            <div class="result-block">
+              <h4>Readiness gaps to address first</h4>
+              <ul id="readinessGaps"></ul>
+            </div>
+            <div class="result-block">
+              <h4>Ownership and governance questions</h4>
+              <ul id="ownershipQuestions"></ul>
+            </div>
+            <div class="result-block">
+              <h4>Recommended next actions</h4>
+              <ul id="nextActions"></ul>
+            </div>
+          </div>
+
+          <div class="priority-box">
+            <h4>What not to do yet</h4>
+            <p id="notYet"></p>
+          </div>
+
+          <div class="email-panel">
+            <h4>Send my 30-60-90 roadmap</h4>
+            <p>The button below packages the diagnosis into a webhook-ready payload. Add your webhook URL in the settings panel to make the roadmap-send request live.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-teal" id="sendRoadmapBtn">Send my 30-60-90 roadmap</button>
+              <button type="button" class="btn btn-blue" id="openFeedbackBtn">Share feedback / use case</button>
+            </div>
+            <div class="status" id="sendStatus">Status: waiting to send</div>
+          </div>
+
+          <div class="payload-panel">
+            <h4>Webhook-ready payload preview</h4>
+            <p>This is the exact payload the frontend is ready to send to your automation or backend.</p>
+            <pre id="payloadPreview">{}</pre>
+          </div>
+
+          <div class="btn-row" style="margin-top:16px;">
+            <button type="button" class="btn btn-secondary" id="editInputs">Edit Inputs</button>
+            <button type="button" class="btn btn-secondary" id="resetBtnResults">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-stack">
+        <section class="side-block">
+          <div class="section-head">
+            <div>
+              <h2 style="margin:0;font-size:1.8rem;">Launch settings</h2>
+              <p>Paste your endpoints here before publishing to make the MVP operational.</p>
+            </div>
+            <div class="badge">🔌</div>
+          </div>
+          <div class="arch-grid">
+            <div class="arch-item">
+              <small>Roadmap send endpoint</small>
+              <strong class="mono" id="roadmapEndpointLabel">Not set</strong>
+              <span>Set this in the code constant <span class="mono">ROADMAP_WEBHOOK_URL</span>.</span>
+            </div>
+            <div class="arch-item">
+              <small>Feedback endpoint</small>
+              <strong class="mono" id="feedbackEndpointLabel">Not set</strong>
+              <span>Set this in the code constant <span class="mono">FEEDBACK_WEBHOOK_URL</span>.</span>
+            </div>
+          </div>
+          <p style="margin-top:10px;">Without endpoints, the buttons still work for demo purposes and show the payload, but they will not actually send data anywhere.</p>
+        </section>
+
+        <section class="side-block">
+          <div class="section-head">
+            <div>
+              <h2 style="margin:0;font-size:1.8rem;">What changed in this MVP</h2>
+              <p>This version is built for public launch readiness, not just prototype review.</p>
+            </div>
+            <div class="badge">✨</div>
+          </div>
+          <div class="arch-grid">
+            <div class="arch-item"><small>Upgrade 1</small><strong>Email-ready flow</strong><span>Collects recipient information needed for roadmap delivery.</span></div>
+            <div class="arch-item"><small>Upgrade 2</small><strong>Webhook-ready payload</strong><span>Packages the diagnosis into a structured send request for your backend or automation.</span></div>
+            <div class="arch-item"><small>Upgrade 3</small><strong>Feedback loop</strong><span>Captures use cases, clarity issues, and improvement suggestions from real users.</span></div>
+            <div class="arch-item"><small>Upgrade 4</small><strong>Frontend demo-safe</strong><span>Still usable publicly before the actual backend endpoints are connected.</span></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <dialog id="feedbackDialog">
+    <form method="dialog" class="modal" id="feedbackForm">
+      <div class="modal-head">
+        <div>
+          <h3>Share feedback or a use case</h3>
+          <p style="margin:6px 0 0;color:var(--muted);line-height:1.65;">Use this to tell us how you used the tool, what was helpful, what was unclear, or what you want next.</p>
+        </div>
+        <button class="close" value="cancel" type="submit">✕</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label class="top" for="feedbackEmail">Email</label>
+          <input id="feedbackEmail" type="email" placeholder="name@example.com">
+        </div>
+        <div class="field">
+          <label class="top" for="feedbackRole">Role / title</label>
+          <input id="feedbackRole" type="text" placeholder="Role or title">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label class="top" for="feedbackOrg">Organization</label>
+          <input id="feedbackOrg" type="text" placeholder="Organization">
+        </div>
+        <div class="field">
+          <label class="top" for="wantFollowup">
+            <input id="wantFollowup" type="checkbox" style="width:auto;margin-right:8px;transform:translateY(1px);">
+            I’d like follow-up
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="top" for="feedbackUseCase">How did you use the tool?</label>
+        <textarea id="feedbackUseCase" placeholder="Describe the use case, situation, or problem you were exploring."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="top" for="feedbackHelp">What was most helpful?</label>
+        <textarea id="feedbackHelp" placeholder="What worked well for you?"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="top" for="feedbackImprove">What was unclear or should improve?</label>
+        <textarea id="feedbackImprove" placeholder="What would make the tool stronger or easier to use?"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-blue" id="submitFeedbackBtn">Submit feedback</button>
+        <button type="submit" class="btn btn-secondary">Close</button>
+      </div>
+      <div class="status" id="feedbackStatus">Status: waiting to submit</div>
+    </form>
+  </dialog>
+
+  <script>
+    // ======= CONFIGURE THESE BEFORE GO-LIVE =======
+    const ROADMAP_WEBHOOK_URL = "";
+    const FEEDBACK_WEBHOOK_URL = "";
+    // ==============================================
+
+    const form = document.getElementById('diagnosticForm');
+    const resultsPanel = document.getElementById('resultsPanel');
+    const steps = [...document.querySelectorAll('.form-step')];
+    const pills = {1: pill1 = document.getElementById('pill-1'), 2: pill2 = document.getElementById('pill-2'), 3: pill3 = document.getElementById('pill-3')};
+    document.getElementById('roadmapEndpointLabel').textContent = ROADMAP_WEBHOOK_URL || "Not set";
+    document.getElementById('feedbackEndpointLabel').textContent = FEEDBACK_WEBHOOK_URL || "Not set";
+
+    let latestPayload = null;
+
+    function setStep(step){
+      steps.forEach(s => s.classList.toggle('active', Number(s.dataset.step) === step));
+      [1,2,3].forEach(n => {
+        pills[n].classList.remove('active','done');
+        if(n < step) pills[n].classList.add('done');
+        if(n === step) pills[n].classList.add('active');
+      });
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function bindRange(id, outId){
+      const input = document.getElementById(id);
+      const out = document.getElementById(outId);
+      const sync = () => out.textContent = input.value;
+      input.addEventListener('input', sync);
+      sync();
+    }
+    ['clarity','support','visibility','workflowClarity','tools','governanceScore'].forEach(id => {
+      const outMap = {clarity:'clarityValue',support:'supportValue',visibility:'visibilityValue',workflowClarity:'workflowValue',tools:'toolsValue',governanceScore:'governanceValue'};
+      bindRange(id, outMap[id]);
+    });
+
+    document.getElementById('toStep2').onclick = () => setStep(2);
+    document.getElementById('backTo1').onclick = () => setStep(1);
+    document.getElementById('toStep3').onclick = () => setStep(3);
+    document.getElementById('backTo2').onclick = () => setStep(2);
+    document.getElementById('editInputs').onclick = () => { resultsPanel.classList.remove('active'); setStep(1); };
+
+    function resetAll(){
+      form.reset();
+      ['clarity','support','visibility','workflowClarity','tools','governanceScore'].forEach(id => document.getElementById(id).value = 3);
+      ['clarity','support','visibility','workflowClarity','tools','governanceScore'].forEach(id => {
+        const outMap = {clarity:'clarityValue',support:'supportValue',visibility:'visibilityValue',workflowClarity:'workflowValue',tools:'toolsValue',governanceScore:'governanceValue'};
+        document.getElementById(outMap[id]).textContent = 3;
+      });
+      document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+      resultsPanel.classList.remove('active');
+      latestPayload = null;
+      document.getElementById('payloadPreview').textContent = "{}";
+      document.getElementById('sendStatus').textContent = "Status: waiting to send";
+      setStep(1);
+    }
+    ['resetBtnTop','resetBtnBottom','resetBtnResults'].forEach(id => document.getElementById(id).onclick = resetAll);
+
+    function unique(arr){ return [...new Set(arr)]; }
+    function listToHTML(el, items){ el.innerHTML = items.map(i => `<li>${i}</li>`).join(''); }
+
+    function buildPayload(values, diagnosticOutput){
+      return {
+        submissionId: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        submittedAt: new Date().toISOString(),
+        source: "public_enablement_diagnostic",
+        recipient: {
+          email: values.recipientEmail || "",
+          name: values.recipientName || "",
+          organization: values.organization || ""
+        },
+        inputs: values,
+        diagnosticOutput
+      };
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const values = {
+        challenge: document.getElementById('challenge').value.trim(),
+        context: document.getElementById('context').value,
+        audience: document.getElementById('audience').value,
+        journeyStage: document.getElementById('journeyStage').value,
+        recurrence: document.getElementById('recurrence').value,
+        severity: document.getElementById('severity').value,
+        resourceState: document.getElementById('resourceState').value,
+        dataView: document.getElementById('dataView').value,
+        clarity: Number(document.getElementById('clarity').value),
+        support: Number(document.getElementById('support').value),
+        visibility: Number(document.getElementById('visibility').value),
+        workflowClarity: Number(document.getElementById('workflowClarity').value),
+        tools: Number(document.getElementById('tools').value),
+        governanceScore: Number(document.getElementById('governanceScore').value),
+        symptoms: document.getElementById('symptoms').value.trim(),
+        frictions: [...document.querySelectorAll('.check-item input:checked')].map(i => i.value),
+        recipientEmail: document.getElementById('recipientEmail').value.trim(),
+        recipientName: document.getElementById('recipientName').value.trim(),
+        organization: document.getElementById('organization').value.trim(),
+        consent: document.getElementById('consent').checked
+      };
+
+      const domainScores = {
+        clarity: 6 - values.clarity,
+        support: 6 - values.support,
+        visibility: 6 - values.visibility,
+        workflow: 6 - values.workflowClarity,
+        access: 6 - values.tools,
+        governance: 6 - values.governanceScore
+      };
+
+      if(values.severity === 'high'){ Object.keys(domainScores).forEach(k => domainScores[k] += 0.6); }
+      else if(values.severity === 'medium'){ Object.keys(domainScores).forEach(k => domainScores[k] += 0.25); }
+
+      if(values.recurrence === 'recurring'){ domainScores.governance += 0.5; domainScores.support += 0.4; domainScores.workflow += 0.4; }
+      if(values.resourceState === 'yes-buried'){ domainScores.visibility += 0.8; }
+      else if(values.resourceState === 'none'){ domainScores.support += 0.7; domainScores.access += 0.4; }
+      else if(values.resourceState === 'partial'){ domainScores.support += 0.4; }
+      if(values.dataView === 'no'){ domainScores.visibility += 0.9; }
+      else if(values.dataView === 'somewhat'){ domainScores.visibility += 0.4; }
+
+      values.frictions.forEach(f => {
+        if(f === 'users'){ domainScores.clarity += 0.4; domainScores.support += 0.2; }
+        if(f === 'admins'){ domainScores.governance += 0.5; domainScores.access += 0.3; }
+        if(f === 'workflow'){ domainScores.workflow += 0.8; }
+        if(f === 'governance'){ domainScores.governance += 0.9; }
+        if(f === 'access'){ domainScores.access += 0.8; domainScores.visibility += 0.2; }
+        if(f === 'leaders'){ domainScores.support += 0.7; domainScores.visibility += 0.2; }
+      });
+
+      if(values.context === 'onboarding'){ domainScores.clarity += 0.4; domainScores.support += 0.5; }
+      if(values.context === 'adoption'){ domainScores.support += 0.4; domainScores.visibility += 0.2; }
+      if(values.context === 'workflow'){ domainScores.workflow += 0.8; }
+      if(values.context === 'governance'){ domainScores.governance += 0.9; }
+      if(values.context === 'visibility'){ domainScores.visibility += 0.9; }
+      if(values.journeyStage === 'transition'){ domainScores.workflow += 0.3; domainScores.clarity += 0.3; }
+      if(values.journeyStage === 'leader'){ domainScores.support += 0.5; domainScores.visibility += 0.2; }
+      if(values.journeyStage === 'reporting'){ domainScores.visibility += 0.6; domainScores.governance += 0.3; }
+
+      const ranking = Object.entries(domainScores).sort((a,b) => b[1]-a[1]);
+      const primary = ranking[0][0];
+      const secondary = ranking[1][0];
+      const scoreAvg = Object.values(domainScores).reduce((a,b)=>a+b,0) / Object.values(domainScores).length;
+      let riskLevel = 'low';
+      if(scoreAvg >= 2.6 || values.severity === 'high') riskLevel = 'high';
+      else if(scoreAvg >= 2.0 || values.severity === 'medium') riskLevel = 'medium';
+
+      const names = {
+        clarity: 'role clarity',
+        support: 'support structure',
+        visibility: 'visibility',
+        workflow: 'workflow design',
+        access: 'access / tools',
+        governance: 'governance / ownership'
+      };
+      const diagnosisMap = {
+        clarity: 'This appears primarily to be a role clarity problem.',
+        support: 'This appears primarily to be a support and reinforcement problem.',
+        visibility: 'This appears primarily to be a visibility and signal problem.',
+        workflow: 'This appears primarily to be a workflow design problem.',
+        access: 'This appears primarily to be an access / tools problem.',
+        governance: 'This appears primarily to be a governance and ownership problem.'
+      };
+      const ownerMap = {
+        clarity: ['Enablement', 'Clarify role expectations, milestones, and performance evidence.'],
+        support: ['Managers + Enablement', 'Strengthen reinforcement, coaching supports, and manager-facing guidance.'],
+        visibility: ['Analytics / LMS / Business Owner', 'Improve dashboard visibility and make the issue measurable.'],
+        workflow: ['Operations + Enablement', 'Redesign sequence, handoffs, and decision points before adding more training.'],
+        access: ['LMS / Systems / Admin Owner', 'Resolve tool access, permissions, and resource discoverability barriers.'],
+        governance: ['Governance Lead + Business Owner', 'Clarify decision rights, ownership, approval pathways, and escalation rules.']
+      };
+      const interventionMap = {
+        clarity: 'Clarify expectations, role milestones, and evidence of success before expanding content.',
+        support: 'Add reinforcement mechanisms, manager check-ins, quick supports, and execution coaching.',
+        visibility: 'Improve dashboards, reporting access, and decision-support visibility before assuming the issue is capability alone.',
+        workflow: 'Redesign the workflow or sequence first, then determine what learning support is still needed.',
+        access: 'Fix access, permissions, and discoverability so people can use the right tools at the right time.',
+        governance: 'Clarify who owns what, who approves what, and how decisions move before creating more assets.'
+      };
+      const trainingMap = {
+        clarity: ['Maybe later', 'Training may help, but only after expectations are made clearer.'],
+        support: ['Not primary', 'Training is unlikely to be the first answer if reinforcement and support remain weak.'],
+        visibility: ['Not primary', 'This looks more like a visibility problem than a content problem.'],
+        workflow: ['Not primary', 'Do not add more training before checking whether the process itself is broken or unclear.'],
+        access: ['Not primary', 'Training will not solve missing access, missing tools, or poor discoverability.'],
+        governance: ['Not primary', 'Training is not the first answer when ownership and decision rights are unclear.']
+      };
+
+      const root = [], gaps = [], questions = [], actions = [], tags = [];
+      ranking.slice(0,3).forEach(([k]) => {
+        if(k === 'clarity'){ root.push('People may not have a clear picture of what good execution looks like in this role or stage.'); gaps.push('Clarify expectations, milestones, and the behaviors that demonstrate readiness.'); questions.push('Where are expectations defined today, and are they visible in the system or only assumed?'); actions.push('Define or simplify role expectations and make them visible at the point of need.'); tags.push('Role clarity');}
+        if(k === 'support'){ root.push('The system may be asking people to execute without enough reinforcement, coaching, or support tools.'); gaps.push('Strengthen manager-facing reinforcement and point-of-need supports.'); questions.push('What manager behaviors or follow-up structures should exist but currently do not?'); actions.push('Add manager supports, check-ins, quick guides, and reinforcement points.'); tags.push('Support');}
+        if(k === 'visibility'){ root.push('Leaders may not be able to see the problem clearly enough to act consistently or early.'); gaps.push('Increase visibility into progress, risk, or failure points.'); questions.push('What should leaders be able to see that they currently cannot see easily?'); actions.push('Create or refine dashboards, signals, and action-oriented reporting views.'); tags.push('Visibility');}
+        if(k === 'workflow'){ root.push('The process itself may be too confusing, fragmented, or inconsistent for people to succeed reliably.'); gaps.push('Simplify sequence, handoffs, and workflow guidance.'); questions.push('Where does the process break down, and is the sequence actually executable?'); actions.push('Map the current workflow, remove friction, and redesign unclear handoffs before creating more learning.'); tags.push('Workflow');}
+        if(k === 'access'){ root.push('People may be blocked by missing tools, permissions, or hard-to-find resources.'); gaps.push('Improve access, discoverability, and ease of use for the required tools and resources.'); questions.push('Are the right resources available at the right time, and can people actually access them?'); actions.push('Resolve access issues, improve placement, and make critical resources easier to find.'); tags.push('Access');}
+        if(k === 'governance'){ root.push('Ownership, approval, or decision rights may be too unclear for the system to function consistently.'); gaps.push('Clarify ownership, decision rights, and escalation logic.'); questions.push('Who owns this issue today, and who is supposed to decide what happens next?'); actions.push('Document ownership, define escalation paths, and remove ambiguity from governance decisions.'); tags.push('Governance');}
+      });
+
+      const diagnosisNarrative = diagnosisMap[primary] + ` The secondary signal points to ${names[secondary]}.`;
+      const fixFirst = names[primary].replace(/\b\w/g, c => c.toUpperCase());
+      const [owner, ownerDetail] = ownerMap[primary];
+      const [trainingAnswer, trainingDetail] = trainingMap[primary];
+      const interventionType = interventionMap[primary];
+
+      let evidenceNarrative = 'Look for improved consistency, reduced repeated questions, clearer ownership, and stronger signal visibility in the area most affected.';
+      if(primary === 'workflow') evidenceNarrative = 'Watch for fewer handoff failures, fewer missed steps, and more consistent execution across the same workflow.';
+      if(primary === 'visibility') evidenceNarrative = 'Watch for earlier intervention, clearer dashboards, fewer hidden issues, and better leader action based on visible signals.';
+      if(primary === 'support') evidenceNarrative = 'Watch for fewer clarifying questions, stronger manager follow-up, and more consistent use of support resources.';
+      if(primary === 'clarity') evidenceNarrative = 'Watch for more consistent execution, fewer expectation-related questions, and stronger alignment across the role.';
+      if(primary === 'access') evidenceNarrative = 'Watch for fewer access requests, stronger resource usage, and less workaround behavior.';
+      if(primary === 'governance') evidenceNarrative = 'Watch for faster decisions, fewer duplicate requests, and less confusion around ownership or approvals.';
+
+      let notYet = 'Do not default to building more training until the primary structural issue is addressed.';
+      if(primary === 'clarity') notYet = 'Do not build more content before confirming that expectations, readiness milestones, and success criteria are actually clear.';
+      if(primary === 'support') notYet = 'Do not assume the issue is solved by more training if reinforcement, coaching, and support tools remain weak.';
+      if(primary === 'workflow') notYet = 'Do not create another course before testing whether the workflow itself needs redesign.';
+      if(primary === 'visibility') notYet = 'Do not rely on anecdotal follow-up alone when better visibility and measurement are needed first.';
+      if(primary === 'access') notYet = 'Do not ask people to perform better in a system they cannot fully access or navigate.';
+      if(primary === 'governance') notYet = 'Do not add more assets or requests into a system where ownership and approval logic remain unclear.';
+
+      const riskBadge = document.getElementById('riskBadge');
+      riskBadge.textContent = `${riskLevel} risk`;
+      riskBadge.className = 'risk-badge ' + (riskLevel === 'low' ? 'risk-low' : riskLevel === 'medium' ? 'risk-medium' : 'risk-high');
+
+      document.getElementById('primaryDiagnosis').textContent = fixFirst + ' is the primary diagnosis';
+      document.getElementById('diagnosisNarrative').textContent = diagnosisNarrative;
+      document.getElementById('fixFirst').textContent = fixFirst;
+      document.getElementById('fixFirstDetail').textContent = `Primary issue domain based on the current inputs and condition ratings.`;
+      document.getElementById('ownerPrimary').textContent = owner;
+      document.getElementById('ownerDetail').textContent = ownerDetail;
+      document.getElementById('trainingAnswer').textContent = trainingAnswer;
+      document.getElementById('trainingDetail').textContent = trainingDetail;
+      document.getElementById('evidenceNarrative').textContent = evidenceNarrative;
+      document.getElementById('interventionType').textContent = interventionType;
+      document.getElementById('notYet').textContent = notYet;
+      listToHTML(document.getElementById('rootCauses'), unique(root).slice(0,4));
+      listToHTML(document.getElementById('readinessGaps'), unique(gaps).slice(0,4));
+      listToHTML(document.getElementById('ownershipQuestions'), unique(questions).slice(0,4));
+      listToHTML(document.getElementById('nextActions'), unique(actions).slice(0,5));
+
+      const tagBox = document.getElementById('diagnosticTags');
+      const tagItems = unique([...tags, values.context, values.audience, values.severity, values.recurrence]);
+      tagBox.innerHTML = tagItems.map(t => `<span class="tag">${String(t).replace(/\b\w/g, c => c.toUpperCase())}</span>`).join('');
+
+      const diagnosticOutput = {
+        primaryDiagnosis: fixFirst,
+        secondaryDiagnosis: names[secondary].replace(/\b\w/g, c => c.toUpperCase()),
+        riskLevel, fixFirst, ownerPrimary: owner, trainingAnswer, interventionType,
+        rootCauses: unique(root).slice(0,4),
+        readinessGaps: unique(gaps).slice(0,4),
+        ownershipQuestions: unique(questions).slice(0,4),
+        nextActions: unique(actions).slice(0,5),
+        notYet, evidenceNarrative, tags: tagItems
+      };
+      latestPayload = buildPayload(values, diagnosticOutput);
+      document.getElementById('payloadPreview').textContent = JSON.stringify(latestPayload, null, 2);
+
+      // Prefill feedback email if available
+      document.getElementById('feedbackEmail').value = values.recipientEmail || "";
+      document.getElementById('feedbackOrg').value = values.organization || "";
+
+      resultsPanel.classList.add('active');
+      document.getElementById('sendStatus').textContent = "Status: ready to send roadmap request";
+      window.scrollTo({top: resultsPanel.offsetTop - 20, behavior: 'smooth'});
+    });
+
+    async function postJSON(url, payload){
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error(`Request failed: ${res.status}`);
+      return res.json().catch(() => ({}));
+    }
+
+    document.getElementById('sendRoadmapBtn').addEventListener('click', async () => {
+      const status = document.getElementById('sendStatus');
+      if(!latestPayload){
+        status.textContent = "Status: generate the diagnostic first";
+        return;
+      }
+      if(!latestPayload.recipient.email){
+        status.textContent = "Status: add a recipient email in Step 3 before sending";
+        return;
+      }
+      if(!ROADMAP_WEBHOOK_URL){
+        status.textContent = "Status: demo mode only — roadmap payload is ready, but no roadmap webhook URL is configured yet";
+        return;
+      }
+      try{
+        status.textContent = "Status: sending roadmap request...";
+        await postJSON(ROADMAP_WEBHOOK_URL, latestPayload);
+        status.textContent = "Status: roadmap request sent successfully";
+      }catch(err){
+        status.textContent = "Status: roadmap request failed — " + err.message;
+      }
+    });
+
+    const feedbackDialog = document.getElementById('feedbackDialog');
+    document.getElementById('openFeedbackBtn').addEventListener('click', () => {
+      feedbackDialog.showModal();
+    });
+
+    document.getElementById('submitFeedbackBtn').addEventListener('click', async () => {
+      const status = document.getElementById('feedbackStatus');
+      const payload = {
+        submittedAt: new Date().toISOString(),
+        source: "public_enablement_diagnostic_feedback",
+        email: document.getElementById('feedbackEmail').value.trim(),
+        role: document.getElementById('feedbackRole').value.trim(),
+        organization: document.getElementById('feedbackOrg').value.trim(),
+        wantFollowup: document.getElementById('wantFollowup').checked,
+        useCase: document.getElementById('feedbackUseCase').value.trim(),
+        helpful: document.getElementById('feedbackHelp').value.trim(),
+        improve: document.getElementById('feedbackImprove').value.trim(),
+        relatedSubmissionId: latestPayload ? latestPayload.submissionId : null
+      };
+
+      if(!FEEDBACK_WEBHOOK_URL){
+        status.textContent = "Status: demo mode only — feedback payload is ready, but no feedback webhook URL is configured yet";
+        return;
+      }
+      try{
+        status.textContent = "Status: submitting feedback...";
+        await postJSON(FEEDBACK_WEBHOOK_URL, payload);
+        status.textContent = "Status: feedback submitted successfully";
+      }catch(err){
+        status.textContent = "Status: feedback failed — " + err.message;
+      }
+    });
+
+    setStep(1);
+  </script>
+</body>
+</html>

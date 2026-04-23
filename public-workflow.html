@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enablement Diagnostic — Public Launch Technical Workflow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#12243a;
+      --ink-2:#1c3552;
+      --cream:#f7f3eb;
+      --paper:#fffdf9;
+      --line:#e7ddd0;
+      --gold:#b98b38;
+      --gold-soft:#ecd8af;
+      --muted:#627387;
+      --blue:#4d73a6;
+      --teal:#2f7d67;
+      --rose:#a15d7b;
+      --terracotta:#b46849;
+      --olive:#6f7c3f;
+      --slate:#68788f;
+      --shadow:0 16px 40px rgba(18,36,58,.08);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--cream);
+      color:var(--ink);
+      font-family:'DM Sans',sans-serif;
+      line-height:1.55;
+    }
+    .wrap{
+      max-width:1360px;
+      margin:0 auto;
+      padding:32px 24px 56px;
+    }
+    .hero{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
+      color:#fff;
+      border-radius:28px;
+      padding:34px 32px;
+      box-shadow:var(--shadow);
+    }
+    .hero:after{
+      content:"";
+      position:absolute;
+      right:-50px; bottom:-50px;
+      width:240px; height:240px;
+      background:radial-gradient(circle, rgba(236,216,175,.18) 0%, transparent 68%);
+    }
+    .eyebrow{
+      font-size:.74rem;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:var(--gold-soft);
+      margin-bottom:10px;
+    }
+    h1{
+      margin:0 0 12px;
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(2.5rem, 4.3vw, 4.4rem);
+      line-height:1.08;
+      font-weight:600;
+      letter-spacing:-.02em;
+      max-width:18ch;
+    }
+    .hero p{
+      max-width:76ch;
+      color:rgba(255,255,255,.86);
+      margin:0;
+      line-height:1.8;
+    }
+    .summary{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+    .summary-card{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:14px;
+    }
+    .summary-card small{
+      display:block;
+      font-size:.64rem;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:var(--gold-soft);
+      margin-bottom:6px;
+    }
+    .summary-card span{
+      display:block;
+      font-size:.9rem;
+      line-height:1.45;
+      color:rgba(255,255,255,.86);
+    }
+
+    .section{
+      margin-top:22px;
+      background:var(--paper);
+      border:1px solid var(--line);
+      border-top:4px solid var(--section-accent, var(--gold));
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:18px;
+      margin-bottom:14px;
+    }
+    .section-head-text{flex:1}
+    .section-kicker{
+      font-size:.72rem;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:var(--section-accent, var(--gold));
+      margin-bottom:8px;
+    }
+    .section-head h2{
+      margin:0;
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(2rem, 3vw, 3rem);
+      line-height:1.04;
+      font-weight:600;
+    }
+    .section-copy{
+      margin-top:8px;
+      color:var(--muted);
+      line-height:1.8;
+      max-width:84ch;
+    }
+    .section-badge{
+      width:54px; height:54px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:18px;
+      background:linear-gradient(180deg,#fff,var(--section-soft,#f8f4ea));
+      border:1px solid var(--section-border,#eadab6);
+      color:var(--section-accent,var(--gold));
+      font-size:1.35rem;
+      flex-shrink:0;
+    }
+
+    #stack{ --section-accent: var(--gold); --section-soft:#fbf6ea; --section-border:#eadab6; }
+    #flow{ --section-accent: var(--blue); --section-soft:#eef3fb; --section-border:#d2deef; }
+    #mvp{ --section-accent: var(--teal); --section-soft:#edf7f4; --section-border:#cbe3dc; }
+    #future{ --section-accent: var(--slate); --section-soft:#f2f4f8; --section-border:#d8dfe8; }
+
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+    .card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg,#fff,var(--section-soft,#fbf8f2));
+      padding:18px;
+    }
+    .card h3{
+      margin:0 0 10px;
+      font-size:.95rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--section-accent,var(--gold));
+    }
+    .card p,.card li{
+      color:var(--muted);
+      line-height:1.65;
+      font-size:.92rem;
+    }
+    .card ul{margin:0; padding-left:18px}
+
+    .tag-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      padding:.34rem .64rem;
+      border-radius:999px;
+      border:1px solid var(--section-border,#eadab6);
+      background:var(--section-soft,#fbf6ea);
+      color:var(--section-accent,var(--gold));
+      font-size:.68rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:700;
+    }
+
+    .flowchart{
+      margin-top:18px;
+      display:grid;
+      gap:18px;
+    }
+    .lane-title{
+      margin:8px 0 2px;
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      color:var(--section-accent,var(--blue));
+      font-weight:700;
+    }
+    .flow-row{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
+      gap:12px;
+      align-items:stretch;
+    }
+    .flow-box{
+      position:relative;
+      background:linear-gradient(180deg,#fff,var(--section-soft,#eef3fb));
+      border:1px solid var(--section-border,#d2deef);
+      border-radius:18px;
+      padding:16px;
+      min-height:100%;
+    }
+    .flow-box small{
+      display:block;
+      font-size:.62rem;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:var(--section-accent,var(--blue));
+      margin-bottom:6px;
+    }
+    .flow-box strong{
+      display:block;
+      font-size:1rem;
+      margin-bottom:8px;
+      color:var(--ink);
+    }
+    .flow-box p{
+      margin:0;
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.58;
+    }
+    .arrow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--section-accent,var(--blue));
+      font-size:1.7rem;
+      font-weight:700;
+      min-height:100%;
+    }
+
+    .decision-strip{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+    .decision{
+      border:1px solid var(--section-border,#d2deef);
+      background:linear-gradient(180deg,#fff,var(--section-soft,#eef3fb));
+      border-radius:16px;
+      padding:14px;
+    }
+    .decision small{
+      display:block;
+      font-size:.62rem;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:var(--section-accent,var(--blue));
+      margin-bottom:6px;
+    }
+    .decision strong{
+      display:block;
+      font-size:.96rem;
+      margin-bottom:6px;
+    }
+    .decision span{
+      display:block;
+      color:var(--muted);
+      font-size:.86rem;
+      line-height:1.5;
+    }
+
+    .table-wrap{overflow:auto; margin-top:16px}
+    table{
+      width:100%;
+      min-width:880px;
+      border-collapse:collapse;
+      font-size:.9rem;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    th,td{
+      padding:13px 12px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+    }
+    th{
+      background:#fbf8f2;
+      font-size:.7rem;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:var(--muted);
+    }
+    td strong{color:var(--ink)}
+    td p{margin:.1rem 0; color:var(--muted)}
+
+    .cta{
+      margin-top:20px;
+      padding:18px;
+      border-radius:18px;
+      background:#fff8ea;
+      border:1px solid #eadab6;
+    }
+    .cta h3{
+      margin:0 0 8px;
+      font-size:1rem;
+      color:var(--ink);
+    }
+    .cta p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.65;
+    }
+
+    footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:.86rem;
+      padding:26px 0 10px;
+    }
+
+    @media (max-width:1120px){
+      .summary,.decision-strip,.grid-2{grid-template-columns:1fr 1fr}
+      .flow-row{grid-template-columns:1fr}
+      .arrow{transform:rotate(90deg); min-height:34px}
+    }
+    @media (max-width:720px){
+      .wrap{padding:20px 16px 40px}
+      .hero{padding:26px 20px}
+      .summary,.decision-strip,.grid-2{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Public launch first • Technical workflow • Shareable artifact</div>
+      <h1>Enablement Diagnostic Public Launch Workflow</h1>
+      <p>
+        This flow chart maps the immediate public-facing technical path for the Enablement Diagnostic. It shows how the website experience, diagnostic logic, PDF generation, email delivery, analytics, and feedback loop fit together — without waiting for the later Docebo integration phase.
+      </p>
+      <div class="summary">
+        <div class="summary-card"><small>Launch now</small><span>Public-facing standalone diagnostic website</span></div>
+        <div class="summary-card"><small>Core output</small><span>Tailored 30-60-90 day roadmap PDF emailed to the user</span></div>
+        <div class="summary-card"><small>Signal capture</small><span>Usage analytics + feedback + use-case submissions</span></div>
+        <div class="summary-card"><small>Later phase</small><span>Reuse the same engine inside Docebo</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="stack">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 1</div>
+          <h2>Recommended stack for the immediate public launch</h2>
+          <p class="section-copy">
+            The fastest reliable path is one shared diagnostic frontend, plus a lightweight backend or automation layer that generates the roadmap, converts it to PDF, and emails it to the recipient. This avoids building the public version twice later when the LMS version is added.
+          </p>
+        </div>
+        <div class="section-badge">⚙️</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Frontend / public website</h3>
+          <ul>
+            <li>Standalone HTML, CSS, and JavaScript diagnostic</li>
+            <li>Hosted publicly on GitHub Pages, Netlify, or Vercel</li>
+            <li>Collects diagnostic inputs and recipient email</li>
+            <li>Displays diagnosis immediately on screen</li>
+          </ul>
+          <div class="tag-row">
+            <span class="tag">Public URL</span>
+            <span class="tag">Standalone Page</span>
+            <span class="tag">Immediate Launch</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Backend / automation layer</h3>
+          <ul>
+            <li>Webhook endpoint or lightweight backend receives submission payload</li>
+            <li>Generates tailored 30-60-90 roadmap content</li>
+            <li>Renders roadmap into branded HTML → PDF</li>
+            <li>Emails PDF to the recipient</li>
+          </ul>
+          <div class="tag-row">
+            <span class="tag">Webhook</span>
+            <span class="tag">PDF Generation</span>
+            <span class="tag">Transactional Email</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Immediate MVP Option</th>
+              <th>Scalable Option</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hosting</strong></td>
+              <td>GitHub Pages / Netlify</td>
+              <td>Vercel / custom domain</td>
+              <td>Serve the public diagnostic page</td>
+            </tr>
+            <tr>
+              <td><strong>Submission handling</strong></td>
+              <td>Zapier / Make webhook</td>
+              <td>Serverless function or backend API</td>
+              <td>Receive results + email request</td>
+            </tr>
+            <tr>
+              <td><strong>PDF generation</strong></td>
+              <td>HTML-to-PDF automation step</td>
+              <td>Backend template rendering + PDF library</td>
+              <td>Create branded roadmap PDF</td>
+            </tr>
+            <tr>
+              <td><strong>Email delivery</strong></td>
+              <td>Gmail / automation email step</td>
+              <td>SendGrid / Postmark / Mailgun</td>
+              <td>Send roadmap to the user</td>
+            </tr>
+            <tr>
+              <td><strong>Data capture</strong></td>
+              <td>Google Sheets / Airtable</td>
+              <td>Database / reporting layer</td>
+              <td>Store submissions, analytics, and feedback</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="flow">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 2</div>
+          <h2>Literal technical flow chart</h2>
+          <p class="section-copy">
+            This is the immediate public-facing flow. The Docebo version comes later and can point to the same diagnostic engine once the public version is stable.
+          </p>
+        </div>
+        <div class="section-badge">🗺️</div>
+      </div>
+
+      <div class="flowchart">
+        <div class="lane-title">Primary user journey</div>
+        <div class="flow-row">
+          <div class="flow-box">
+            <small>Step 1</small>
+            <strong>User lands on public diagnostic page</strong>
+            <p>User opens the standalone public website and begins the guided diagnostic experience.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 2</small>
+            <strong>User completes diagnostic inputs</strong>
+            <p>Tool captures challenge, context, audience, diagnostic conditions, friction zones, symptoms, and email address.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 3</small>
+            <strong>Frontend generates on-screen diagnosis</strong>
+            <p>User sees the immediate result summary, including diagnosis, fix-first recommendation, owner, and training/not-training guidance.</p>
+          </div>
+        </div>
+
+        <div class="lane-title">Submission + PDF workflow</div>
+        <div class="flow-row">
+          <div class="flow-box">
+            <small>Step 4</small>
+            <strong>User clicks “Send my 30-60-90 roadmap”</strong>
+            <p>Frontend packages the input and diagnostic output into a structured payload.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 5</small>
+            <strong>Submission payload goes to webhook / backend</strong>
+            <p>Automation or backend receives the data and validates the required fields.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 6</small>
+            <strong>Roadmap content is generated</strong>
+            <p>The system transforms the diagnosis into a tailored 30-day, 60-day, and 90-day strategy roadmap.</p>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-box">
+            <small>Step 7</small>
+            <strong>Roadmap HTML template is populated</strong>
+            <p>The tailored roadmap content is inserted into a branded PDF-ready template.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 8</small>
+            <strong>PDF is generated</strong>
+            <p>Template is converted into a downloadable, email-ready PDF artifact.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 9</small>
+            <strong>Email is sent to recipient</strong>
+            <p>User receives the PDF roadmap by email, ideally with a branded message and optional follow-up links.</p>
+          </div>
+        </div>
+
+        <div class="lane-title">Analytics + feedback loop</div>
+        <div class="flow-row">
+          <div class="flow-box">
+            <small>Step 10</small>
+            <strong>Submission is logged</strong>
+            <p>Inputs, diagnosis type, severity, timestamp, and email metadata are stored for analysis.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 11</small>
+            <strong>User can submit feedback / use case</strong>
+            <p>A dedicated feedback button opens a form for tool feedback, use cases, and improvement ideas.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <small>Step 12</small>
+            <strong>Analytics and feedback inform iteration</strong>
+            <p>Usage data, diagnostic themes, roadmap sends, and feedback patterns drive tool refinement and future LMS integration.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="decision-strip">
+        <div class="decision">
+          <small>MVP decision</small>
+          <strong>Public first</strong>
+          <span>Launch the website and PDF/email workflow before the LMS version.</span>
+        </div>
+        <div class="decision">
+          <small>Data decision</small>
+          <strong>Store submissions</strong>
+          <span>Even a lightweight data table is worth it from day one.</span>
+        </div>
+        <div class="decision">
+          <small>UX decision</small>
+          <strong>Email required</strong>
+          <span>The email field unlocks delivery, feedback follow-up, and future reporting.</span>
+        </div>
+        <div class="decision">
+          <small>Scaling decision</small>
+          <strong>One engine, two surfaces</strong>
+          <span>Reuse the same logic later inside Docebo instead of rebuilding it.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="mvp">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 3</div>
+          <h2>MVP build sequence for immediate launch</h2>
+          <p class="section-copy">
+            This is the order I would use if the goal is to get something public-facing live quickly without building unnecessary complexity too early.
+          </p>
+        </div>
+        <div class="section-badge">🚀</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Build Stage</th>
+              <th>What gets built</th>
+              <th>Why it comes in this order</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Stage 1</strong></td>
+              <td>Finalize public diagnostic UI and add email field</td>
+              <td>Public experience must be stable before automation is connected</td>
+              <td>Standalone live page</td>
+            </tr>
+            <tr>
+              <td><strong>Stage 2</strong></td>
+              <td>Create submission payload and webhook endpoint</td>
+              <td>Need a reliable handoff from the frontend before PDF/email logic works</td>
+              <td>Structured submission flow</td>
+            </tr>
+            <tr>
+              <td><strong>Stage 3</strong></td>
+              <td>Build roadmap-generation template logic</td>
+              <td>Roadmap content must be standardized before PDF creation</td>
+              <td>30-60-90 roadmap HTML or template output</td>
+            </tr>
+            <tr>
+              <td><strong>Stage 4</strong></td>
+              <td>Convert roadmap to PDF and email it</td>
+              <td>This is the core user promise and must be reliable</td>
+              <td>Emailed PDF roadmap</td>
+            </tr>
+            <tr>
+              <td><strong>Stage 5</strong></td>
+              <td>Add feedback / use-case button and submission flow</td>
+              <td>Once the core promise works, add the feedback loop to improve the tool</td>
+              <td>Feedback capture stream</td>
+            </tr>
+            <tr>
+              <td><strong>Stage 6</strong></td>
+              <td>Add analytics dashboard / reporting view</td>
+              <td>Turns usage and submissions into product-improvement intelligence</td>
+              <td>Usage and signal dashboard</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cta">
+        <h3>Fastest practical MVP</h3>
+        <p>
+          Public HTML diagnostic + email field + webhook + HTML-to-PDF generation + transactional email + Google Sheets/Airtable logging. That is the fastest path to a working public artifact without waiting on LMS integration.
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="future">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-kicker">Section 4</div>
+          <h2>Later-phase Docebo integration note</h2>
+          <p class="section-copy">
+            The LMS phase should come after the public version is stable. At that point, the same diagnostic experience can be embedded or linked inside Docebo while still using the same PDF/email/analytics engine behind the scenes.
+          </p>
+        </div>
+        <div class="section-badge">🔗</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>What stays the same later</h3>
+          <ul>
+            <li>Diagnostic logic</li>
+            <li>30-60-90 roadmap generation</li>
+            <li>PDF template</li>
+            <li>Email workflow</li>
+            <li>Feedback loop</li>
+            <li>Analytics model</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What changes in the LMS phase</h3>
+          <ul>
+            <li>Access point moves into Docebo</li>
+            <li>Role, group, or branch context may be prefilled</li>
+            <li>Internal reporting can segment internal vs external users</li>
+            <li>The same engine becomes both public-facing and internally-facing</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built as a shareable technical flow-chart artifact for the immediate public launch of the Enablement Diagnostic, with Docebo intentionally deferred to a later integration phase.
+    </footer>
+  </div>
+</body>
+</html>
