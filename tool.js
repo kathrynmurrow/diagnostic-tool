@@ -1,611 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enablement Diagnostic Studio | Public MVP</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --ink:#13263d; --ink-2:#1a3554; --gold:#b98b38; --gold-soft:#ead2a4;
-      --cream:#f7f3eb; --paper:#fffdf9; --line:#e6ddd0; --muted:#637489;
-      --success:#2d6a4f; --warn:#9c6b00; --risk:#8c2f39; --teal:#2f7d67; --blue:#4a70a8;
-      --shadow:0 16px 42px rgba(19,38,61,.08); --radius:20px;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);line-height:1.55}
-    .wrap{max-width:1180px;margin:0 auto;padding:24px 18px 40px}
-    .hero{
-      background:linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
-      border-radius:26px;padding:28px 24px;color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden
-    }
-    .hero:after{content:"";position:absolute;inset:auto -28px -36px auto;width:180px;height:180px;background:radial-gradient(circle, rgba(234,210,164,.18) 0%, transparent 70%)}
-    .eyebrow{font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:10px}
-    h1{margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-size:clamp(2.3rem,4vw,3.7rem);line-height:1.04;font-weight:600;letter-spacing:-.02em;max-width:16ch}
-    .hero p{max-width:76ch;color:rgba(255,255,255,.84);line-height:1.75;margin:0}
-    .summary-strip{margin-top:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-    .summary-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px}
-    .summary-card small{display:block;text-transform:uppercase;letter-spacing:.16em;color:var(--gold-soft);font-size:.64rem;margin-bottom:5px}
-    .summary-card span{display:block;color:rgba(255,255,255,.86);font-size:.9rem;line-height:1.45}
-    .layout{display:grid;grid-template-columns:minmax(0,1.02fr) 380px;gap:20px;margin-top:20px;align-items:start}
-    .card{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
-    .card.pad{padding:22px}
-    .section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
-    .section-head h2{margin:0;font-family:'Cormorant Garamond',serif;font-size:2rem;line-height:1.05;font-weight:600}
-    .section-head p{margin:8px 0 0;color:var(--muted);line-height:1.7}
-    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:46px;border-radius:16px;background:#f8f3e8;border:1px solid #ead7b4;color:var(--gold);font-size:1.25rem;flex-shrink:0}
-    .progress{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
-    .step-pill{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fbf8f2}
-    .step-pill.active{border-color:#d8c39a;background:#fff8ea}
-    .step-pill.done{border-color:#cfe3dc;background:#eef7f4}
-    .step-pill small{display:block;text-transform:uppercase;letter-spacing:.15em;font-size:.63rem;color:var(--gold);margin-bottom:5px}
-    .step-pill strong{display:block;font-size:.92rem}
-    .form-step{display:none}.form-step.active{display:block}
-    .field{margin-bottom:16px}
-    label.top{display:block;font-weight:700;margin-bottom:8px;font-size:.96rem}
-    .help{color:var(--muted);font-size:.84rem;line-height:1.55;margin-top:4px}
-    textarea,select,input[type="text"],input[type="email"]{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 13px;font:inherit;background:#fff;color:var(--ink)}
-    textarea{min-height:108px;resize:vertical}
-    .grid-2,.grid-3{display:grid;gap:14px}.grid-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr 1fr}
-    .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .check-item{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fbf8f2;cursor:pointer}
-    .check-item input{margin-top:3px}.check-item .small{display:block;color:var(--muted);font-size:.82rem;line-height:1.45;margin-top:2px}
-    .range-card{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbf8f2}
-    .range-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
-    .range-top strong{font-size:.92rem}
-    .score-chip{min-width:36px;text-align:center;padding:6px 8px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:700;color:var(--ink);font-size:.85rem}
-    input[type="range"]{width:100%}
-    .scale-legend{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;color:var(--muted);margin-top:8px}
-    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-    .btn{appearance:none;border:none;border-radius:12px;min-height:44px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer;letter-spacing:.03em}
-    .btn-primary{background:var(--ink);color:#fff}
-    .btn-secondary{background:#f2ece1;color:var(--ink);border:1px solid var(--line)}
-    .btn-teal{background:var(--teal);color:#fff}
-    .btn-blue{background:var(--blue);color:#fff}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .results-panel{display:none;margin-top:18px}.results-panel.active{display:block}
-    .headline{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}
-    .headline-card{padding:18px;border-radius:18px;border:1px solid var(--line);background:#fff}
-    .headline-card h3{margin:0 0 8px;font-family:'Cormorant Garamond',serif;font-size:1.8rem;line-height:1.05}
-    .headline-card p{margin:0;color:var(--muted);line-height:1.7}
-    .signal-box{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
-    .signal{padding:12px;border-radius:14px;border:1px solid var(--line);background:#fbf8f2}
-    .signal small{display:block;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
-    .signal strong{display:block;font-family:'Cormorant Garamond',serif;font-size:1.5rem;line-height:1;margin-bottom:4px}
-    .signal span{display:block;color:var(--muted);font-size:.82rem;line-height:1.45}
-    .risk-badge{display:inline-flex;align-items:center;padding:8px 11px;border-radius:999px;font-size:.76rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
-    .risk-low{background:rgba(45,106,79,.12);color:var(--success)} .risk-medium{background:rgba(156,107,0,.12);color:var(--warn)} .risk-high{background:rgba(140,47,57,.12);color:var(--risk)}
-    .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .result-block{padding:18px;border-radius:18px;background:#fff;border:1px solid var(--line);min-height:100%}
-    .result-block h4{margin:0 0 8px;font-size:1rem;letter-spacing:.03em}
-    .result-block ul{margin:0;padding-left:18px}
-    .result-block li{margin:.4rem 0;color:var(--muted);line-height:1.6}
-    .priority-box,.email-panel,.payload-panel{margin-top:14px;padding:18px;border-radius:18px;border:1px solid #ead7b4;background:#fff8ea}
-    .email-panel{border-color:#cde3dc;background:#eff7f4}
-    .payload-panel{border-color:#d2deef;background:#eef3fb}
-    .priority-box h4,.email-panel h4,.payload-panel h4{margin:0 0 8px;font-size:1rem}
-    .priority-box p,.email-panel p,.payload-panel p{margin:0;color:var(--ink);line-height:1.65}
-    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-    .tag{padding:7px 10px;border-radius:999px;background:var(--cream);border:1px solid var(--line);font-size:.75rem;color:var(--ink)}
-    .roadmap-panel{margin-top:14px;padding:20px;border-radius:20px;border:1px solid #d6e4dd;background:linear-gradient(180deg,#f8fcfa 0%, #f1f7f4 100%)}
-    .roadmap-panel h4{margin:0 0 8px;font-size:1rem}
-    .roadmap-panel p{margin:0;color:var(--ink);line-height:1.65}
-    .roadmap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
-    .roadmap-phase{background:#fff;border:1px solid #d6e4dd;border-radius:18px;padding:16px;box-shadow:0 10px 22px rgba(19,38,61,.05)}
-    .roadmap-phase small{display:block;text-transform:uppercase;letter-spacing:.16em;color:var(--teal);font-size:.64rem;margin-bottom:6px}
-    .roadmap-phase h5{margin:0 0 8px;font-size:1rem}
-    .roadmap-phase ul{margin:0;padding-left:18px}
-    .roadmap-phase li{margin:.42rem 0;color:var(--muted);line-height:1.58}
-    .phase-block{margin-top:12px;padding-top:12px;border-top:1px solid #e4ece8}
-    .phase-block strong{display:block;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
-    .action-strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-    .mini-callout{padding:14px;border-radius:16px;background:#fff;border:1px solid #d6e4dd}
-    .mini-callout strong{display:block;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
-    .mini-callout p{margin:0;color:var(--muted);line-height:1.6}
-    .side-stack{display:grid;gap:16px}
-    .side-block{padding:20px;border-radius:20px;border:1px solid var(--line);background:#fff}
-    .side-block h3{margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-size:1.6rem;line-height:1.05}
-    .side-block p,.side-block li{color:var(--muted);line-height:1.65;font-size:.92rem}
-    .side-block ul{margin:0;padding-left:18px}
-    .arch-grid{display:grid;gap:10px;margin-top:10px}
-    .arch-item{border:1px solid var(--line);border-radius:14px;background:#fbf8f2;padding:12px}
-    .arch-item small{display:block;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);font-size:.64rem;margin-bottom:4px}
-    .arch-item strong{display:block;font-size:.92rem;margin-bottom:4px}
-    .arch-item span{color:var(--muted);font-size:.84rem;line-height:1.45;display:block}
-    .status{margin-top:10px;font-size:.88rem;color:var(--muted)}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem}
-    pre{white-space:pre-wrap;word-break:break-word;background:#0f1f33;color:#eef4ff;border-radius:16px;padding:14px;border:1px solid rgba(255,255,255,.08);font-size:.8rem;line-height:1.5;max-height:320px;overflow:auto}
-    dialog{border:none;border-radius:20px;padding:0;max-width:760px;width:calc(100% - 24px);box-shadow:0 24px 60px rgba(19,38,61,.22)}
-    dialog::backdrop{background:rgba(18,36,58,.45)}
-    .modal{padding:22px;background:var(--paper)}
-    .modal-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px}
-    .modal-head h3{margin:0;font-family:'Cormorant Garamond',serif;font-size:2rem;line-height:1.04}
-    .close{background:#f2ece1;border:1px solid var(--line);border-radius:12px;min-width:42px;height:42px;font:inherit;font-weight:700;cursor:pointer}
-    @media (max-width:1020px){
-      .layout,.headline,.result-grid,.grid-2,.grid-3,.roadmap-grid,.action-strip{grid-template-columns:1fr}
-      .summary-strip,.signal-box,.check-grid{grid-template-columns:1fr 1fr}
-    }
-    @media (max-width:700px){
-      .summary-strip,.signal-box,.check-grid{grid-template-columns:1fr}
-      .wrap{padding:20px 16px 40px}.hero{padding:26px 20px}.card.pad{padding:18px}
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <section class="hero">
-      <div class="eyebrow">Readiness • Enablement • Governance • Public MVP</div>
-      <h1>Enablement Diagnostic Studio</h1>
-      <p>
-        A guided diagnostic designed to help identify whether a challenge is primarily a training issue, a readiness issue, a workflow issue, a visibility issue, a governance issue, or some combination of those. This public prototype is intentionally general, generates an on-screen strategy roadmap, and can pass a webhook-ready payload into your future email automation when connected.
-      </p>
-      <div class="summary-strip">
-        <div class="summary-card"><small>Step 1</small><span>Define the situation and who is affected.</span></div>
-        <div class="summary-card"><small>Step 2</small><span>Diagnose the system conditions around clarity, support, access, visibility, and governance.</span></div>
-        <div class="summary-card"><small>Step 3</small><span>Generate the output, send roadmap request, and capture feedback.</span></div>
-        <div class="summary-card"><small>Purpose</small><span>Challenge the reflex to default to “more training” before diagnosing the real problem.</span></div>
-        <div class="summary-card"><small>Prototype note</small><span>Built as a public-facing demo. Email delivery only works after a webhook or automation is connected.</span></div>
-      </div>
-    </section>
 
-    <div class="layout">
-      <section class="card pad">
-        <div class="section-head">
-          <div>
-            <h2>Run a guided diagnostic</h2>
-            <p>This tool is strongest when the user describes one real problem, rates the current conditions honestly, and uses the output to identify what should happen before more content is created.</p>
-          </div>
-          <div class="badge">🩺</div>
-        </div>
-
-        <div class="progress">
-          <div class="step-pill active" id="pill-1"><small>Step 1</small><strong>Define the situation</strong></div>
-          <div class="step-pill" id="pill-2"><small>Step 2</small><strong>Diagnose the conditions</strong></div>
-          <div class="step-pill" id="pill-3"><small>Step 3</small><strong>Generate the output</strong></div>
-        </div>
-
-        <form id="diagnosticForm">
-          <div class="form-step active" data-step="1">
-            <div class="field">
-              <label class="top" for="challenge">What problem are you trying to solve?</label>
-              <textarea id="challenge" placeholder="Example: New managers complete onboarding, but they still struggle to execute consistently in the first 60 days and administrators spend too much time clarifying process steps."></textarea>
-              <div class="help">Describe the real problem in plain language. Focus on the execution issue, not the presumed solution. This prototype is directional by design, not a full organizational assessment.</div>
-            </div>
-
-            <div class="grid-2">
-              <div class="field">
-                <label class="top" for="context">Primary context</label>
-                <select id="context">
-                  <option value="onboarding">Onboarding / ramp-up</option>
-                  <option value="adoption">Adoption / behavior change</option>
-                  <option value="workflow">Workflow / process execution</option>
-                  <option value="governance">Governance / ownership clarity</option>
-                  <option value="visibility">Visibility / reporting / decision support</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="top" for="audience">Primary audience</label>
-                <select id="audience">
-                  <option value="frontline">Frontline / individual contributors</option>
-                  <option value="managers">Managers / people leaders</option>
-                  <option value="multiunit">Multi-site / cross-functional leaders</option>
-                  <option value="admins">Admins / enablement owners</option>
-                  <option value="mixed">Mixed internal + external audiences</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid-3">
-              <div class="field">
-                <label class="top" for="journeyStage">Where in the journey does it appear most?</label>
-                <select id="journeyStage">
-                  <option value="early">Early / first exposure</option>
-                  <option value="transition">Role transition or handoff point</option>
-                  <option value="daily">Daily execution / recurring work</option>
-                  <option value="leader">Leader follow-up / reinforcement</option>
-                  <option value="reporting">Reporting / visibility / escalation</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="top" for="recurrence">Is this issue new or recurring?</label>
-                <select id="recurrence">
-                  <option value="new">New / recent</option>
-                  <option value="intermittent">Intermittent</option>
-                  <option value="recurring">Recurring / persistent</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="top" for="severity">How severe is the issue?</label>
-                <select id="severity">
-                  <option value="low">Low impact / contained</option>
-                  <option value="medium">Moderate / affecting consistency</option>
-                  <option value="high">High / creating risk or significant rework</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid-2">
-              <div class="field">
-                <label class="top" for="resourceState">Do supporting resources already exist?</label>
-                <select id="resourceState">
-                  <option value="yes-good">Yes, and they are reasonably visible</option>
-                  <option value="yes-buried">Yes, but they are buried or underused</option>
-                  <option value="partial">Partially / inconsistently</option>
-                  <option value="none">No, not really</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="top" for="dataView">Can leaders currently see the issue in data?</label>
-                <select id="dataView">
-                  <option value="clear">Yes, clearly</option>
-                  <option value="somewhat">Somewhat, but not enough</option>
-                  <option value="no">No, not really</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="btn-row">
-              <button type="button" class="btn btn-primary" id="toStep2">Continue to Step 2</button>
-              <button type="button" class="btn btn-secondary" id="resetBtnTop">Reset</button>
-            </div>
-          </div>
-
-          <div class="form-step" data-step="2">
-            <div class="grid-2">
-              <div class="range-card">
-                <div class="range-top"><strong>Role clarity</strong><span class="score-chip" id="clarityValue">3</span></div>
-                <input id="clarity" type="range" min="1" max="5" value="3">
-                <div class="scale-legend"><span>1 = expectations unclear</span><span>5 = expectations consistently clear</span></div>
-              </div>
-              <div class="range-card">
-                <div class="range-top"><strong>Support structure</strong><span class="score-chip" id="supportValue">3</span></div>
-                <input id="support" type="range" min="1" max="5" value="3">
-                <div class="scale-legend"><span>1 = little support in place</span><span>5 = support is strong and consistent</span></div>
-              </div>
-            </div>
-
-            <div class="grid-2" style="margin-top:14px;">
-              <div class="range-card">
-                <div class="range-top"><strong>Visibility</strong><span class="score-chip" id="visibilityValue">3</span></div>
-                <input id="visibility" type="range" min="1" max="5" value="3">
-                <div class="scale-legend"><span>1 = weak visibility</span><span>5 = leaders can clearly see what matters</span></div>
-              </div>
-              <div class="range-card">
-                <div class="range-top"><strong>Workflow clarity</strong><span class="score-chip" id="workflowValue">3</span></div>
-                <input id="workflowClarity" type="range" min="1" max="5" value="3">
-                <div class="scale-legend"><span>1 = process confusing</span><span>5 = sequence and handoffs are clear</span></div>
-              </div>
-            </div>
-
-            <div class="grid-2" style="margin-top:14px;">
-              <div class="range-card">
-                <div class="range-top"><strong>Access / tools</strong><span class="score-chip" id="toolsValue">3</span></div>
-                <input id="tools" type="range" min="1" max="5" value="3">
-                <div class="scale-legend"><span>1 = tools / access missing</span><span>5 = tools are available and easy to use</span></div>
-              </div>
-              <div class="range-card">
-                <div class="range-top"><strong>Governance / ownership</strong><span class="score-chip" id="governanceValue">3</span></div>
-                <input id="governanceScore" type="range" min="1" max="5" value="3">
-                <div class="scale-legend"><span>1 = ownership unclear</span><span>5 = ownership and decisions are clear</span></div>
-              </div>
-            </div>
-
-            <div class="field" style="margin-top:16px;">
-              <label class="top">Where is friction showing up most?</label>
-              <div class="check-grid">
-                <label class="check-item"><input type="checkbox" value="users"> <span><strong>User experience</strong><span class="small">Confusion, inconsistency, poor adoption, weak usability</span></span></label>
-                <label class="check-item"><input type="checkbox" value="admins"> <span><strong>Admin experience</strong><span class="small">Manual effort, duplicate work, weak ownership, process burden</span></span></label>
-                <label class="check-item"><input type="checkbox" value="workflow"> <span><strong>Workflow design</strong><span class="small">Broken handoffs, unclear sequence, too many steps</span></span></label>
-                <label class="check-item"><input type="checkbox" value="governance"> <span><strong>Governance</strong><span class="small">Decision rights, approval logic, accountability gaps</span></span></label>
-                <label class="check-item"><input type="checkbox" value="access"> <span><strong>Access / tools</strong><span class="small">Missing systems, hard-to-find resources, permissions issues</span></span></label>
-                <label class="check-item"><input type="checkbox" value="leaders"> <span><strong>Leader reinforcement</strong><span class="small">Weak coaching, inconsistent follow-up, low accountability</span></span></label>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="top" for="symptoms">Observed symptoms</label>
-              <textarea id="symptoms" placeholder="Example: repetitive questions, inconsistent execution, extra admin rework, missed deadlines, unclear ownership, low adoption"></textarea>
-            </div>
-
-            <div class="btn-row">
-              <button type="button" class="btn btn-secondary" id="backTo1">Back</button>
-              <button type="button" class="btn btn-primary" id="toStep3">Continue to Step 3</button>
-            </div>
-          </div>
-
-          <div class="form-step" data-step="3">
-            <div class="grid-2">
-              <div class="field">
-                <label class="top" for="recipientEmail">Where should we send your 30-60-90 roadmap once delivery is connected?</label>
-                <input id="recipientEmail" type="email" placeholder="name@example.com">
-                <div class="help">Optional for prototype use. You can generate, review, and download the roadmap now. Email delivery will work after you connect your automation.</div>
-              </div>
-              <div class="field">
-                <label class="top" for="recipientName">Name (optional)</label>
-                <input id="recipientName" type="text" placeholder="Your name">
-              </div>
-            </div>
-
-            <div class="grid-2">
-              <div class="field">
-                <label class="top" for="organization">Organization (optional)</label>
-                <input id="organization" type="text" placeholder="Company or team">
-              </div>
-              <div class="field">
-                <label class="top" for="consent">
-                  <input id="consent" type="checkbox" style="width:auto;margin-right:8px;transform:translateY(1px);">
-                  I agree to receive this roadmap by email once the delivery workflow is connected
-                </label>
-                <div class="help">Use this for explicit delivery consent. The site should only send email after your automation is connected and your privacy language is finalized.</div>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="top">Ready to generate the diagnostic?</label>
-              <div class="help">This final step translates the situation and condition ratings into a likely diagnosis, what to fix first, who should own the next step, whether training is actually the answer, and what evidence should confirm improvement. It is designed to guide next actions, not replace a fuller human review.</div>
-            </div>
-            <div class="btn-row">
-              <button type="button" class="btn btn-secondary" id="backTo2">Back</button>
-              <button type="submit" class="btn btn-primary">Generate Diagnostic</button>
-              <button type="button" class="btn btn-secondary" id="resetBtnBottom">Reset</button>
-            </div>
-          </div>
-        </form>
-
-        <div class="results-panel" id="resultsPanel">
-          <div class="headline">
-            <div class="headline-card">
-              <div class="risk-badge" id="riskBadge">Moderate risk</div>
-              <h3 id="primaryDiagnosis">Primary diagnosis</h3>
-              <p id="diagnosisNarrative"></p>
-
-              <div class="signal-box">
-                <div class="signal">
-                  <small>Fix first</small>
-                  <strong id="fixFirst">—</strong>
-                  <span id="fixFirstDetail"></span>
-                </div>
-                <div class="signal">
-                  <small>Owner</small>
-                  <strong id="ownerPrimary">—</strong>
-                  <span id="ownerDetail"></span>
-                </div>
-                <div class="signal">
-                  <small>Training answer?</small>
-                  <strong id="trainingAnswer">—</strong>
-                  <span id="trainingDetail"></span>
-                </div>
-              </div>
-
-              <div class="tags" id="diagnosticTags"></div>
-            </div>
-
-            <div class="headline-card">
-              <h3>Evidence to watch</h3>
-              <p id="evidenceNarrative"></p>
-              <div class="priority-box">
-                <h4>Recommended intervention type</h4>
-                <p id="interventionType"></p>
-              </div>
-            </div>
-          </div>
-
-          <div class="result-grid">
-            <div class="result-block">
-              <h4>Likely root causes</h4>
-              <ul id="rootCauses"></ul>
-            </div>
-            <div class="result-block">
-              <h4>Readiness gaps to address first</h4>
-              <ul id="readinessGaps"></ul>
-            </div>
-            <div class="result-block">
-              <h4>Ownership and governance questions</h4>
-              <ul id="ownershipQuestions"></ul>
-            </div>
-            <div class="result-block">
-              <h4>Recommended next actions</h4>
-              <ul id="nextActions"></ul>
-            </div>
-          </div>
-
-          <div class="priority-box">
-            <h4>What not to do yet</h4>
-            <p id="notYet"></p>
-          </div>
-
-          <div class="roadmap-panel" id="roadmapPanel">
-            <h4>Your 30-60-90 strategy roadmap</h4>
-            <p class="help" style="margin:0 0 10px;">This roadmap is a directional strategy output generated from your inputs. It is meant to accelerate thinking, not function as a full audit or formal consulting recommendation.</p>
-            <p id="roadmapSummary">Generate the diagnostic to build a roadmap with embedded actions, coaching questions, and practical tips.</p>
-            <div class="roadmap-grid">
-              <div class="roadmap-phase">
-                <small>Days 1–30</small>
-                <h5 id="phase30Title">Stabilize</h5>
-                <ul id="phase30Actions"></ul>
-                <div class="phase-block">
-                  <strong>Coaching questions</strong>
-                  <ul id="phase30Questions"></ul>
-                </div>
-                <div class="phase-block">
-                  <strong>Tips</strong>
-                  <ul id="phase30Tips"></ul>
-                </div>
-              </div>
-              <div class="roadmap-phase">
-                <small>Days 31–60</small>
-                <h5 id="phase60Title">Align</h5>
-                <ul id="phase60Actions"></ul>
-                <div class="phase-block">
-                  <strong>Coaching questions</strong>
-                  <ul id="phase60Questions"></ul>
-                </div>
-                <div class="phase-block">
-                  <strong>Tips</strong>
-                  <ul id="phase60Tips"></ul>
-                </div>
-              </div>
-              <div class="roadmap-phase">
-                <small>Days 61–90</small>
-                <h5 id="phase90Title">Scale</h5>
-                <ul id="phase90Actions"></ul>
-                <div class="phase-block">
-                  <strong>Coaching questions</strong>
-                  <ul id="phase90Questions"></ul>
-                </div>
-                <div class="phase-block">
-                  <strong>Tips</strong>
-                  <ul id="phase90Tips"></ul>
-                </div>
-              </div>
-            </div>
-            <div class="action-strip">
-              <div class="mini-callout">
-                <strong>Evidence to watch</strong>
-                <p id="roadmapEvidence"></p>
-              </div>
-              <div class="mini-callout">
-                <strong>Primary watch-out</strong>
-                <p id="roadmapWatchout"></p>
-              </div>
-            </div>
-          </div>
-
-          <div class="email-panel">
-            <h4>Download or send your roadmap</h4>
-            <p>Review the roadmap first, download a copy, and then send it into your automation or email workflow when you're ready. Until a webhook is connected, this section stays in demo mode.</p>
-            <div class="mini-callout" id="deliveryNote" style="margin-top:12px;border-color:#cde3dc;background:#f8fcfa;">
-              <strong>Delivery note</strong>
-              <p id="deliverySummary">You can use this prototype today to diagnose a challenge and download the roadmap. Email sending becomes live after you connect your automation.</p>
-            </div>
-            <div class="btn-row">
-              <button type="button" class="btn btn-secondary" id="downloadRoadmapBtn">Download roadmap</button>
-              <button type="button" class="btn btn-teal" id="sendRoadmapBtn">Send my 30-60-90 roadmap</button>
-              <button type="button" class="btn btn-blue" id="openFeedbackBtn">Share feedback / use case</button>
-            </div>
-            <div class="status" id="sendStatus">Status: prototype ready — generate a roadmap to begin</div>
-            <div class="mini-callout" id="successState" style="display:none;margin-top:12px;">
-              <strong id="successTitle">Ready</strong>
-              <p id="successMessage">Generate a roadmap to see what happens next.</p>
-            </div>
-          </div>
-
-          <div class="payload-panel">
-            <h4>Webhook-ready payload preview</h4>
-            <p>This is the exact payload the frontend is ready to send to your automation or backend. You can use it to wire Zapier, Make, or another endpoint later tonight without changing the roadmap logic.</p>
-            <pre id="payloadPreview">{}</pre>
-          </div>
-
-          <div class="btn-row" style="margin-top:16px;">
-            <button type="button" class="btn btn-secondary" id="editInputs">Edit Inputs</button>
-            <button type="button" class="btn btn-secondary" id="resetBtnResults">Reset</button>
-          </div>
-        </div>
-      </section>
-
-      <aside class="side-stack">
-        <section class="side-block">
-          <div class="section-head">
-            <div>
-              <h2 style="margin:0;font-size:1.8rem;">Launch settings</h2>
-              <p>Paste your endpoints here before publishing to make the prototype operational.</p>
-            </div>
-            <div class="badge">🔌</div>
-          </div>
-          <div class="arch-grid">
-            <div class="arch-item">
-              <small>Roadmap send endpoint</small>
-              <strong class="mono" id="roadmapEndpointLabel">Not set</strong>
-              <span>Set this in the code constant <span class="mono">ROADMAP_WEBHOOK_URL</span>.</span>
-            </div>
-            <div class="arch-item">
-              <small>Feedback endpoint</small>
-              <strong class="mono" id="feedbackEndpointLabel">Not set</strong>
-              <span>Set this in the code constant <span class="mono">FEEDBACK_WEBHOOK_URL</span>.</span>
-            </div>
-          </div>
-          <p style="margin-top:10px;">Without endpoints, the buttons still work for demo purposes and show the payload, but they will not actually send data anywhere. That makes this safe to share publicly as a prototype while you finish the automation.</p>
-        </section>
-
-        <section class="side-block">
-          <div class="section-head">
-            <div>
-              <h2 style="margin:0;font-size:1.8rem;">What changed in this MVP</h2>
-              <p>This version is built for public launch readiness, not just prototype review.</p>
-            </div>
-            <div class="badge">✨</div>
-          </div>
-          <div class="arch-grid">
-            <div class="arch-item"><small>Upgrade 1</small><strong>Email-ready flow</strong><span>Collects recipient information needed for roadmap delivery.</span></div>
-            <div class="arch-item"><small>Upgrade 2</small><strong>Webhook-ready payload</strong><span>Packages the diagnosis into a structured send request for your backend or automation.</span></div>
-            <div class="arch-item"><small>Upgrade 3</small><strong>Feedback loop</strong><span>Captures use cases, clarity issues, and improvement suggestions from real users.</span></div>
-            <div class="arch-item"><small>Upgrade 4</small><strong>Frontend demo-safe</strong><span>Still usable publicly before the actual backend endpoints are connected.</span></div>
-          </div>
-        </section>
-      </aside>
-    </div>
-  </div>
-
-  <dialog id="feedbackDialog">
-    <form method="dialog" class="modal" id="feedbackForm">
-      <div class="modal-head">
-        <div>
-          <h3>Share feedback or a use case</h3>
-          <p style="margin:6px 0 0;color:var(--muted);line-height:1.65;">Use this to tell us how you used the tool, what was helpful, what was unclear, or what you want next.</p>
-        </div>
-        <button class="close" value="cancel" type="submit">✕</button>
-      </div>
-
-      <div class="grid-2">
-        <div class="field">
-          <label class="top" for="feedbackEmail">Email</label>
-          <input id="feedbackEmail" type="email" placeholder="name@example.com">
-        </div>
-        <div class="field">
-          <label class="top" for="feedbackRole">Role / title</label>
-          <input id="feedbackRole" type="text" placeholder="Role or title">
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="field">
-          <label class="top" for="feedbackOrg">Organization</label>
-          <input id="feedbackOrg" type="text" placeholder="Organization">
-        </div>
-        <div class="field">
-          <label class="top" for="wantFollowup">
-            <input id="wantFollowup" type="checkbox" style="width:auto;margin-right:8px;transform:translateY(1px);">
-            I’d like follow-up
-          </label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="top" for="feedbackUseCase">How did you use the tool?</label>
-        <textarea id="feedbackUseCase" placeholder="Describe the use case, situation, or problem you were exploring."></textarea>
-      </div>
-
-      <div class="field">
-        <label class="top" for="feedbackHelp">What was most helpful?</label>
-        <textarea id="feedbackHelp" placeholder="What worked well for you?"></textarea>
-      </div>
-
-      <div class="field">
-        <label class="top" for="feedbackImprove">What was unclear or should improve?</label>
-        <textarea id="feedbackImprove" placeholder="What would make the tool stronger or easier to use?"></textarea>
-      </div>
-
-      <div class="btn-row">
-        <button type="button" class="btn btn-blue" id="submitFeedbackBtn">Submit feedback</button>
-        <button type="submit" class="btn btn-secondary">Close</button>
-      </div>
-      <div class="status" id="feedbackStatus">Status: waiting to submit</div>
-    </form>
-  </dialog>
-
-  <script>
     // ======= CONFIGURE THESE BEFORE GO-LIVE =======
     const ROADMAP_WEBHOOK_URL = "";
     const FEEDBACK_WEBHOOK_URL = "";
@@ -659,7 +52,8 @@
       resultsPanel.classList.remove('active');
       latestPayload = null;
       document.getElementById('payloadPreview').textContent = "{}";
-      document.getElementById('sendStatus').textContent = "Status: waiting to send";
+      document.getElementById('sendStatus').textContent = "Status: prototype ready — generate a roadmap to begin";
+      setSuccessState(false, 'Ready', 'Generate a roadmap to see what happens next.');
       document.getElementById('roadmapSummary').textContent = 'Generate the diagnostic to build a roadmap with embedded actions, coaching questions, and practical tips.';
       ['phase30Actions','phase30Questions','phase30Tips','phase60Actions','phase60Questions','phase60Tips','phase90Actions','phase90Questions','phase90Tips'].forEach(id => document.getElementById(id).innerHTML = '');
       document.getElementById('phase30Title').textContent = 'Stabilize';
@@ -673,6 +67,16 @@
 
     function unique(arr){ return [...new Set(arr)]; }
     function listToHTML(el, items){ el.innerHTML = items.map(i => `<li>${i}</li>`).join(''); }
+
+    function setSuccessState(show, title, message){
+      const box = document.getElementById('successState');
+      const titleEl = document.getElementById('successTitle');
+      const msgEl = document.getElementById('successMessage');
+      box.style.display = show ? 'block' : 'none';
+      titleEl.textContent = title;
+      msgEl.textContent = message;
+    }
+
 
     function buildPayload(values, diagnosticOutput, roadmap){
       return {
@@ -828,6 +232,7 @@
       const status = document.getElementById('sendStatus');
       if(!latestPayload){
         status.textContent = 'Status: generate the diagnostic first';
+        setSuccessState(true, 'Nothing downloaded yet', 'Generate the roadmap first, then download your copy.');
         return;
       }
       const payload = latestPayload;
@@ -846,6 +251,7 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 500);
       status.textContent = 'Status: roadmap downloaded';
+      setSuccessState(true, 'Roadmap downloaded', 'Your roadmap was downloaded successfully. You can review it now and connect email delivery later.');
     }
 
     form.addEventListener('submit', (e) => {
@@ -1036,7 +442,8 @@
       document.getElementById('feedbackOrg').value = values.organization || "";
 
       resultsPanel.classList.add('active');
-      document.getElementById('sendStatus').textContent = "Status: ready to send roadmap request";
+      document.getElementById('sendStatus').textContent = "Status: roadmap generated — download now or connect delivery later";
+      setSuccessState(true, "Roadmap generated", "Your roadmap is ready. Download it now, or send it after you connect your automation.");
       window.scrollTo({top: resultsPanel.offsetTop - 20, behavior: 'smooth'});
     });
 
@@ -1056,26 +463,33 @@
       const status = document.getElementById('sendStatus');
       if(!latestPayload){
         status.textContent = "Status: generate the diagnostic first";
+        setSuccessState(true, "Nothing sent yet", "Generate the roadmap first so there is something to send.");
         return;
       }
       if(!latestPayload.recipient.email){
         status.textContent = "Status: add a recipient email in Step 3 before sending";
+        setSuccessState(true, "Recipient missing", "Add an email in Step 3 if you want your future workflow to send the roadmap.");
         return;
       }
       if(!latestPayload.inputs.consent){
         status.textContent = "Status: check the email consent box before sending";
+        setSuccessState(true, "Consent required", "The roadmap can only be sent after the email consent box is checked.");
         return;
       }
       if(!ROADMAP_WEBHOOK_URL){
         status.textContent = "Status: demo mode only — roadmap payload is ready, but no roadmap webhook URL is configured yet";
+        setSuccessState(true, "Prototype mode", "Everything is ready on the front end. Connect your webhook later tonight and this same button can go live.");
         return;
       }
       try{
         status.textContent = "Status: sending roadmap request...";
+        setSuccessState(true, "Sending roadmap", "Your roadmap request is being sent to the connected workflow.");
         await postJSON(ROADMAP_WEBHOOK_URL, latestPayload);
         status.textContent = "Status: roadmap request sent successfully";
+        setSuccessState(true, "Roadmap sent", "The roadmap request was sent successfully to your connected workflow.");
       }catch(err){
         status.textContent = "Status: roadmap request failed — " + err.message;
+        setSuccessState(true, "Send failed", "The roadmap could not be sent. Your payload is still visible below for troubleshooting.");
       }
     });
 
@@ -1113,6 +527,4 @@
     });
 
     setStep(1);
-  </script>
-</body>
-</html>
+  
