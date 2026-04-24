@@ -447,15 +447,15 @@
       window.scrollTo({top: resultsPanel.offsetTop - 20, behavior: 'smooth'});
     });
 
-    async function postJSON(url, payload){
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-      if(!res.ok) throw new Error(`Request failed: ${res.status}`);
-      return res.json().catch(() => ({}));
-    }
+   async function postJSON(url, payload){
+  const res = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+  return res.text().catch(() => "");
+}
 
     document.getElementById('downloadRoadmapBtn').addEventListener('click', downloadRoadmapFile);
 
