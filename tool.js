@@ -450,81 +450,14 @@
    async function postJSON(url, payload){
   const res = await fetch(url, {
     method: 'POST',
-    body: JSON.stringify(payload)
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      data: JSON.stringify(payload)
+    })
   });
 
   if (!res.ok) throw new Error(`Request failed: ${res.status}`);
   return res.text().catch(() => "");
 }
-
-    document.getElementById('downloadRoadmapBtn').addEventListener('click', downloadRoadmapFile);
-
-    document.getElementById('sendRoadmapBtn').addEventListener('click', async () => {
-      const status = document.getElementById('sendStatus');
-      if(!latestPayload){
-        status.textContent = "Status: generate the diagnostic first";
-        setSuccessState(true, "Nothing sent yet", "Generate the roadmap first so there is something to send.");
-        return;
-      }
-      if(!latestPayload.recipient.email){
-        status.textContent = "Status: add a recipient email in Step 3 before sending";
-        setSuccessState(true, "Recipient missing", "Add an email in Step 3 if you want your future workflow to send the roadmap.");
-        return;
-      }
-      if(!latestPayload.inputs.consent){
-        status.textContent = "Status: check the email consent box before sending";
-        setSuccessState(true, "Consent required", "The roadmap can only be sent after the email consent box is checked.");
-        return;
-      }
-      if(!ROADMAP_WEBHOOK_URL){
-        status.textContent = "Status: demo mode only — roadmap payload is ready, but no roadmap webhook URL is configured yet";
-        setSuccessState(true, "Prototype mode", "Everything is ready on the front end. Connect your webhook later tonight and this same button can go live.");
-        return;
-      }
-      try{
-        status.textContent = "Status: sending roadmap request...";
-        setSuccessState(true, "Sending roadmap", "Your roadmap request is being sent to the connected workflow.");
-        await postJSON(ROADMAP_WEBHOOK_URL, latestPayload);
-        status.textContent = "Status: roadmap request sent successfully";
-        setSuccessState(true, "Roadmap sent", "The roadmap request was sent successfully to your connected workflow.");
-      }catch(err){
-        status.textContent = "Status: roadmap request failed — " + err.message;
-        setSuccessState(true, "Send failed", "The roadmap could not be sent. Your payload is still visible below for troubleshooting.");
-      }
-    });
-
-    const feedbackDialog = document.getElementById('feedbackDialog');
-    document.getElementById('openFeedbackBtn').addEventListener('click', () => {
-      feedbackDialog.showModal();
-    });
-
-    document.getElementById('submitFeedbackBtn').addEventListener('click', async () => {
-      const status = document.getElementById('feedbackStatus');
-      const payload = {
-        submittedAt: new Date().toISOString(),
-        source: "public_enablement_diagnostic_feedback",
-        email: document.getElementById('feedbackEmail').value.trim(),
-        role: document.getElementById('feedbackRole').value.trim(),
-        organization: document.getElementById('feedbackOrg').value.trim(),
-        wantFollowup: document.getElementById('wantFollowup').checked,
-        useCase: document.getElementById('feedbackUseCase').value.trim(),
-        helpful: document.getElementById('feedbackHelp').value.trim(),
-        improve: document.getElementById('feedbackImprove').value.trim(),
-        relatedSubmissionId: latestPayload ? latestPayload.submissionId : null
-      };
-
-      if(!FEEDBACK_WEBHOOK_URL){
-        status.textContent = "Status: demo mode only — feedback payload is ready, but no feedback webhook URL is configured yet";
-        return;
-      }
-      try{
-        status.textContent = "Status: submitting feedback...";
-        await postJSON(FEEDBACK_WEBHOOK_URL, payload);
-        status.textContent = "Status: feedback submitted successfully";
-      }catch(err){
-        status.textContent = "Status: feedback failed — " + err.message;
-      }
-    });
-
-    setStep(1);
-  
