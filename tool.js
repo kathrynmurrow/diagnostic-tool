@@ -448,16 +448,16 @@
     });
 
    async function postJSON(url, payload){
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: new URLSearchParams({
-      data: JSON.stringify(payload)
-    })
-  });
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(payload)
+    });
 
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-  return res.text().catch(() => "");
+    console.log("✅ Sent to Zapier (no-cors)");
+    return true;
+  } catch (err) {
+    console.error("❌ Failed:", err);
+  }
 }
